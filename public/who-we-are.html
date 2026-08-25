@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who We Are | AuraMed Spa & Wellness</title>
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1c2b24; /* Deep, luxury botanical green */
+            --primary-light: #2d4239;
+            --accent: #d4af37; /* Warm understated gold tint */
+            --bg-sand: #faf8f5; /* Ultra-premium warm white off-shade */
+            --text-dark: #222222;
+            --text-muted: #666666;
+            --transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Typography Refinement */
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 400;
+            color: var(--primary);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        /* Persistent Premium Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(250, 248, 245, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(28, 43, 36, 0.05);
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .logo span {
+            font-size: 0.8rem;
+            display: block;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: -2px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        nav a {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 400;
+            color: var(--primary);
+            padding: 0.5rem 0;
+            display: block;
+        }
+
+        .dropdown {
+            position: relative; /* Added to keep the submenu locked under this parent element */
+        }
+
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            border-top: 2px solid var(--primary);
+        }
+
+        .dropdown-menu a {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dark);
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--bg-sand);
+            color: var(--accent);
+        }
+
+        .cta-btn {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 0.9rem 2rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 1px solid var(--primary);
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .cta-btn:hover {
+            background-color: transparent;
+            color: var(--primary);
+        }
+
+        /* Editorial Hero Subpage Section */
+        .about-hero {
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            padding: 0 4rem;
+            position: relative;
+            background: linear-gradient(rgba(28, 43, 36, 0.074), rgba(28, 43, 36, 0.082)), 
+                        url('/images/gallery/img-055-15405557-w2070.jpg') center/center no-repeat;
+            margin-top: 0;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .about-hero-content {
+            max-width: 800px;
+            z-index: 2;
+        }
+
+        .about-hero h1 {
+            color: #ffffff;
+            font-size: 4rem;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+        }
+
+        .about-hero p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Mission & Purpose Split Section */
+        .purpose-section {
+            background-color: #ffffff;
+            padding: 10rem 4rem 6rem 4rem;
+        }
+
+        .purpose-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6rem;
+            align-items: center;
+        }
+
+        .purpose-text .tagline {
+            color: var(--accent);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .purpose-text h2 {
+            font-size: 3rem;
+            line-height: 1.2;
+            margin-bottom: 2rem;
+        }
+
+        .purpose-text p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        .purpose-images {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            height: 550px;
+        }
+
+        .img-main {
+            grid-column: 1 / span 10;
+            grid-row: 1;
+            height: 480px;
+            background: url('/images/gallery/img-054-15122909-w2070.jpg') center/cover no-repeat;
+            z-index: 2;
+        }
+
+        .img-sub {
+            grid-column: 4 / span 9;
+            grid-row: 1;
+            height: 420px;
+            margin-top: 130px;
+            background: url('/images/gallery/img-056-16003340-w2070.jpg') center/cover no-repeat;
+            z-index: 3;
+            border: 10px solid #ffffff;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        }
+
+        /* Quality Showpiece Grid (Extracted from Image) */
+        .quality-showcase {
+            background-color: #ffffff;
+            padding: 4rem 4rem 10rem 4rem;
+        }
+
+        .quality-container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .quality-title {
+            text-align: center;
+            font-size: 3.5rem;
+            margin-bottom: 6rem;
+            position: relative;
+        }
+
+        .quality-matrix {
+            display: grid;
+            grid-template-columns: 1fr 400px 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .quality-column {
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+        }
+
+        .quality-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quality-column-left .quality-item {
+            text-align: left;
+        }
+
+        .quality-column-right .quality-item {
+            text-align: left;
+        }
+
+        .quality-item h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .quality-item p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        .center-portrait {
+            width: 100%;
+            height: 550px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .center-portrait img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Core Pillars Framework */
+        .pillars {
+            padding: 8rem 4rem;
+            background-color: var(--bg-sand);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 6rem auto;
+        }
+
+        .section-header h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .pillars-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+        }
+
+        .pillar-card {
+            background: #ffffff;
+            padding: 4rem 3rem;
+            text-align: left;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.01);
+            transition: var(--transition);
+        }
+
+        .pillar-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .pillar-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .pillar-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .pillar-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        /* Luxury Bulwark Footer */
+        footer {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 6rem 4rem 2rem 4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 4rem;
+            padding-bottom: 4rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-brand h3 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+            font-size: 0.95rem;
+            max-width: 320px;
+        }
+
+        .footer-column h4 {
+            color: var(--accent);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .footer-column a {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .footer-column a:hover {
+            color: #ffffff;
+            padding-left: 4px;
+        }
+
+        .footer-newsletter h4 {
+            color: var(--accent);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-newsletter p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+            font-weight: 300;
+        }
+
+        .newsletter-form {
+            display: flex;
+        }
+
+        .newsletter-form input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem 1rem;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            flex-grow: 1;
+            outline: none;
+        }
+
+        .newsletter-form button {
+            background: var(--accent);
+            border: none;
+            color: var(--primary);
+            padding: 0 1.5rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .newsletter-form button:hover {
+            background: #ffffff;
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Responsive Architecture */
+        @media(max-width: 1200px) {
+            .quality-matrix {
+                grid-template-columns: 1fr 1fr;
+                gap: 3rem;
+            }
+            .center-portrait {
+                display: none; /* Hide portrait photo to maintain elite text alignment on medium layout screens */
+            }
+        }
+
+        @media(max-width: 1024px) {
+            header { padding: 1.5rem 2rem; }
+            .purpose-container { grid-template-columns: 1fr; gap: 4rem; }
+            .pillars-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .about-hero h1 { font-size: 3rem; }
+            .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 3rem; }
+        }
+
+        @media(max-width: 768px) {
+            nav, header .cta-btn { display: none; }
+            .purpose-section, .quality-showcase, .pillars { padding: 6rem 2rem; }
+            .purpose-images { height: 400px; }
+            .img-main { height: 320px; grid-column: 1 / span 12; }
+            .img-sub { height: 260px; grid-column: 3 / span 10; margin-top: 100px; }
+            .quality-matrix { grid-template-columns: 1fr; gap: 3rem; }
+            .quality-title { font-size: 2.5rem; margin-bottom: 4rem; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation Matrix -->
+    <header>
+        <a href="index.html" class="logo">
+            AURAMED
+            <span>Spa & Wellness</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="who-we-are.html" style="color: var(--accent);">Who We Are</a></li>
+                <li><a href="treatments.html">Treatments</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li class="dropdown">
+                    <a href="#">Matrix ▾</a>
+                    <div class="dropdown-menu">
+                        <a href="#">Blog</a>
+                        <a href="#">FAQs</a>
+                        <a href="#">Terms</a>
+                        <a href="results.html">Our Results</a>
+                    </div>
+                </li>
+                <li><a href="team.html">Our Team</a></li>
+                <li><a href="contact.html">Get In Touch</a></li>
+            </ul>
+        </nav>
+        <a href="appointment.html" class="cta-btn">Book Appointment</a>
+    </header>
+
+    <!-- Subpage Editorial Hero -->
+    <section class="about-hero">
+        <div class="about-hero-content">
+            <p>Our Narrative</p>
+            <h1>Who We Are</h1>
+        </div>
+    </section>
+
+    <!-- Mission & Purpose Split Screen -->
+    <section class="purpose-section">
+        <div class="purpose-container">
+            <div class="purpose-text">
+                <span class="tagline">The Sanctuary Baseline</span>
+                <h2>Redefining Advanced Clinical Wellness</h2>
+                <p>AuraMed Spa & Wellness was established to bridge the gap between aggressive clinical transformations and holistic, trauma-conscious well-being.</p>
+                <p>We reject temporal trends and toxic synthetic solutions. Our dedicated approach emphasizes organic dermal longevity, deep structural physical health, and the complete calming of structural stress elements within the body.</p>
+            </div>
+            <div class="purpose-images">
+                <div class="img-main"></div>
+                <div class="img-sub"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quality Showcase Section (Extracted Content Integration) -->
+    <section class="quality-showcase">
+        <div class="quality-container">
+            <h2 class="quality-title">Highest Quality</h2>
+            <div class="quality-matrix">
+                
+                <!-- Left Content Column -->
+                <div class="quality-column quality-column-left">
+                    <div class="quality-item">
+                        <h3>Medical Spa Treatments and Holistic Wellness in Lenexa</h3>
+                        <p>A premier wellness destination offering advanced medical aesthetics and holistic wellness treatments. We provide personalized care and customized solutions to help clients achieve their beauty, health, and wellness goals.</p>
+                    </div>
+                    <div class="quality-item">
+                        <h3>A Unique Blend of Science and Nature</h3>
+                        <p>We combine advanced medical treatments with natural wellness practices. This balanced approach helps clients achieve healthier, longer-lasting results.</p>
+                    </div>
+                    <div class="quality-item">
+                        <h3>A Commitment to Education and Community</h3>
+                        <p>We strive to provide our clients with the knowledge they need to make informed decisions about their beauty and health.</p>
+                    </div>
+                </div>
+
+                <!-- Center Fine-Art Portrait Alignment Frame -->
+                <div class="center-portrait">
+                    <!-- Split comparison style image representation mirroring clean lines framework -->
+                    <img src="/images/team/who-we-are-portrait.png" alt="Symmetry and balance portrait layout">
+                </div>
+
+                <!-- Right Content Column -->
+                <div class="quality-column quality-column-right">
+                    <div class="quality-item">
+                        <h3>Our Mission</h3>
+                        <p>Our mission is to empower individuals through wellness, beauty, and self-care. We are dedicated to helping our clients live healthier and more confident lives.</p>
+                    </div>
+                    <div class="quality-item">
+                        <h3>Our Vision</h3>
+                        <p>We envision a world where wellness and natural beauty go hand in hand. Our goal is to inspire healthier lifestyles and lasting self-confidence.</p>
+                    </div>
+                    <div class="quality-item">
+                        <h3>Excellence You Can Trust</h3>
+                        <p>We are committed to providing safe, effective, and high-quality care. Our team continuously embraces innovation and best practices to deliver exceptional results. We believe true wellness involves the mind, body, and spirit. Our treatments are designed to support overall balance and well-being.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Pillars Framework -->
+    <section class="pillars">
+        <div class="section-header">
+            <p>Our Operating Framework</p>
+            <h2>The AuraMed Foundation</h2>
+        </div>
+        <div class="pillars-grid">
+            <div class="pillar-card">
+                <span class="pillar-num">01</span>
+                <h3>Botanical Integrity</h3>
+                <p>Every single formula utilized within our ecosystem honors cellular biology. We choose safe, organic, plant-powered agents configured for long-term tissue support.</p>
+            </div>
+            <div class="pillar-card">
+                <span class="pillar-num">02</span>
+                <h3>Clinical Precision</h3>
+                <p>We combine organic wisdom with modern medical advancements. Every process is executed with meticulous accuracy to guarantee safe, visible results without excessive dermal strain.</p>
+            </div>
+            <div class="pillar-card">
+                <span class="pillar-num">03</span>
+                <h3>Somatic Calm</h3>
+                <p>Rejuvenation cannot succeed in a state of stress. Our treatments balance physiological recovery with nervous system decompression, healing mind and tissue together.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Luxury Bulwark Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3>AURAMED</h3>
+                <p>Setting a premium standard in clinical medspa environments through plant-powered biological treatments and meticulous precision.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="who-we-are.html">Who We Are</a></li>
+                    <li><a href="#">Treatments</a></li>
+                    <li><a href="#">Shop Products</a></li>
+                    <li><a href="#">Online Booking</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Matrix</h4>
+                <ul>
+                    <li><a href="#">Clinical Blog</a></li>
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="#">Our Results</a></li>
+                    <li><a href="#">Terms of Care</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter">
+                <h4>Stay Informed</h4>
+                <p>Subscribe to receive aesthetic research updates and priority scheduling access.</p>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Your Email Address">
+                    <button type="button">Join</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 AuraMed Spa & Wellness. Architecture by Clean Luxury Design.</p>
+            <p>Privacy Policy &nbsp;&middot;&nbsp; Terms of Service</p>
+        </div>
+    </footer>
+
+</body>
+</html>

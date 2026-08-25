@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p>Overview of bookings, payments, and members</p>
+        </div>
+      </div>
+
+      <div class="card-grid" id="statsGrid">
+        <div class="card"><h3>Pending Bookings</h3><div class="stat">–</div></div>
+        <div class="card"><h3>Confirmed Bookings</h3><div class="stat">–</div></div>
+        <div class="card"><h3>Members</h3><div class="stat">–</div></div>
+        <div class="card"><h3>Payments Pending</h3><div class="stat">–</div></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(); // any admin role can view the dashboard
+    AdminAuth.renderSidebar("dashboard.html");
+
+    const role = AdminAuth.getRole();
+
+    async function loadStats() {
+      const cards = document.querySelectorAll("#statsGrid .card .stat");
+      try {
+        const bookings = await AdminAuth.authFetch("/api/bookings");
+        const pending = bookings.filter((b) => b.status === "PENDING").length;
+        const confirmed = bookings.filter((b) => b.status === "CONFIRMED").length;
+        cards[0].textContent = pending;
+        cards[1].textContent = confirmed;
+      } catch (e) {
+        cards[0].textContent = "—";
+        cards[1].textContent = "—";
+      }
+
+      // Members and Payments are Super Admin only endpoints
+      if (role === "SUPER_ADMIN") {
+        try {
+          const members = await AdminAuth.authFetch("/api/members");
+          cards[2].textContent = members.length;
+        } catch (e) { cards[2].textContent = "—"; }
+
+        try {
+          const payments = await AdminAuth.authFetch("/api/payments");
+          cards[3].textContent = payments.filter((p) => p.status === "PENDING").length;
+        } catch (e) { cards[3].textContent = "—"; }
+      } else {
+        cards[2].parentElement.style.display = "none";
+        cards[3].parentElement.style.display = "none";
+      }
+    }
+    loadStats();
+  </script>
+</body>
+</html>

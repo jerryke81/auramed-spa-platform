@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Members | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Members</h1>
+          <p>View and delete only — editing a member's profile isn't available by design (client spec)</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Membership Tier</th><th>Joined</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No members yet.</div>
+    </main>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN"]);
+    AdminAuth.renderSidebar("members.html");
+
+    async function loadMembers() {
+      const members = await AdminAuth.authFetch("/api/members");
+      document.getElementById("emptyState").style.display = members.length ? "none" : "block";
+      document.getElementById("rows").innerHTML = members.map((m) => `
+        <tr>
+          <td>${m.firstName} ${m.lastName}</td>
+          <td>${m.email}</td>
+          <td>${m.membershipTier}</td>
+          <td>${new Date(m.createdAt).toLocaleDateString()}</td>
+          <td><button class="btn btn-danger btn-small" onclick="deleteMember('${m.id}')">Delete</button></td>
+        </tr>
+      `).join("");
+    }
+
+    window.deleteMember = async (id) => {
+      if (!confirm("Delete this member? This can't be undone and can't be reversed by editing.")) return;
+      await AdminAuth.authFetch(`/api/members/${id}`, { method: "DELETE" });
+      loadMembers();
+    };
+
+    loadMembers();
+  </script>
+</body>
+</html>

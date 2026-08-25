@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Treatments | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Treatments</h1>
+          <p>Face · Skin · Body · Wellness — includes drafts not yet live</p>
+        </div>
+        <button class="btn" id="addBtn">+ Add Treatment</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Category</th><th>Duration</th><th>Cost</th><th>Status</th><th>Specialists</th><th></th></tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No treatments yet — add the first one.</div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2 id="modalTitle">Add Treatment</h2>
+      <div class="error-banner" id="formError"></div>
+      <form id="form">
+        <input type="hidden" id="treatmentId">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="name" required placeholder="e.g. Hormone & Thyroid Support">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="category" required>
+              <option value="FACE">Face</option>
+              <option value="SKIN">Skin</option>
+              <option value="BODY">Body</option>
+              <option value="WELLNESS">Wellness</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cost (USD)</label>
+            <input type="number" id="costUsd" step="0.01" required placeholder="250">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Duration</label>
+            <input type="number" id="durationValue" required placeholder="45">
+          </div>
+          <div class="form-group">
+            <label>Unit</label>
+            <select id="durationUnit">
+              <option value="MINUTES">Minutes</option>
+              <option value="HOURS">Hours</option>
+              <option value="DAYS">Days</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Image URL / path</label>
+          <input type="text" id="imageUrl" placeholder="/images/gallery/img-001-14885905-w600.jpg">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="description" required placeholder="Client-facing description of the treatment"></textarea>
+        </div>
+        <div class="form-group">
+          <label>History of Procedure</label>
+          <textarea id="historyOfProcedure" placeholder="When this was developed, methodology background..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Patient Requirements / Contraindications</label>
+          <textarea id="patientRequirements" placeholder="e.g. Not suitable for pregnant clients, disclose allergies..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Specialists</label>
+          <div id="specialistCheckboxes" style="border:1px solid var(--border); border-radius:6px; padding:0.75rem; max-height:140px; overflow-y:auto;"></div>
+        </div>
+        <div class="form-group">
+          <label><input type="checkbox" id="isPublished" style="width:auto; display:inline-block; margin-right:0.4rem;"> Published (visible on public site)</label>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn" id="saveBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN"]);
+    AdminAuth.renderSidebar("treatments.html");
+
+    const rowsEl = document.getElementById("rows");
+    const emptyState = document.getElementById("emptyState");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const form = document.getElementById("form");
+    const formError = document.getElementById("formError");
+    let specialists = [];
+
+    function openModal(treatment) {
+      form.reset();
+      formError.classList.remove("show");
+      document.getElementById("modalTitle").textContent = treatment ? "Edit Treatment" : "Add Treatment";
+      document.getElementById("treatmentId").value = treatment ? treatment.id : "";
+
+      if (treatment) {
+        document.getElementById("name").value = treatment.name;
+        document.getElementById("category").value = treatment.category;
+        document.getElementById("costUsd").value = treatment.costUsd;
+        document.getElementById("durationValue").value = treatment.durationValue;
+        document.getElementById("durationUnit").value = treatment.durationUnit;
+        document.getElementById("description").value = treatment.description;
+        document.getElementById("imageUrl").value = (() => {
+          try { return JSON.parse(treatment.images || "[]")[0] || ""; } catch (e) { return ""; }
+        })();
+        document.getElementById("historyOfProcedure").value = treatment.historyOfProcedure || "";
+        document.getElementById("patientRequirements").value = treatment.patientRequirements || "";
+        document.getElementById("isPublished").checked = treatment.isPublished;
+      }
+
+      const selectedIds = treatment ? treatment.specialists.map((s) => s.specialistId) : [];
+      document.getElementById("specialistCheckboxes").innerHTML = specialists.length
+        ? specialists.map((s) => `
+            <label style="display:flex; align-items:center; gap:0.5rem; padding:0.25rem 0; font-size:0.85rem;">
+              <input type="checkbox" value="${s.id}" ${selectedIds.includes(s.id) ? "checked" : ""} style="width:auto;">
+              ${s.name}
+            </label>`).join("")
+        : "<p style='color:var(--text-muted); font-size:0.85rem;'>No specialists yet — add one first on the Specialists page.</p>";
+
+      modalOverlay.classList.add("open");
+    }
+    function closeModal() { modalOverlay.classList.remove("open"); }
+
+    document.getElementById("addBtn").addEventListener("click", () => openModal(null));
+    document.getElementById("cancelBtn").addEventListener("click", closeModal);
+
+    async function loadSpecialists() {
+      specialists = await AdminAuth.authFetch("/api/specialists");
+    }
+
+    async function loadTreatments() {
+      const treatments = await AdminAuth.authFetch("/api/treatments/admin/all");
+      emptyState.style.display = treatments.length ? "none" : "block";
+      rowsEl.innerHTML = treatments.map((t) => `
+        <tr>
+          <td>${t.name}</td>
+          <td>${t.category}</td>
+          <td>${t.durationValue} ${t.durationUnit.toLowerCase()}</td>
+          <td>$${t.costUsd}</td>
+          <td><span class="badge ${t.isPublished ? "badge-confirmed" : "badge-draft"}">${t.isPublished ? "Published" : "Draft"}</span></td>
+          <td>${t.specialists.map((s) => s.specialist.name).join(", ") || "—"}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-outline btn-small" onclick="editTreatment('${t.id}')">Edit</button>
+            <button class="btn btn-outline btn-small" onclick="togglePublish('${t.id}', ${!t.isPublished})">${t.isPublished ? "Unpublish" : "Publish"}</button>
+            <button class="btn btn-danger btn-small" onclick="deleteTreatment('${t.id}')">Delete</button>
+          </td>
+        </tr>
+      `).join("");
+      window._treatments = treatments;
+    }
+
+    window.editTreatment = (id) => openModal(window._treatments.find((t) => t.id === id));
+
+    window.togglePublish = async (id, isPublished) => {
+      await AdminAuth.authFetch(`/api/treatments/${id}/publish`, {
+        method: "PATCH",
+        body: JSON.stringify({ isPublished }),
+      });
+      loadTreatments();
+    };
+
+    window.deleteTreatment = async (id) => {
+      if (!confirm("Delete this treatment? This can't be undone.")) return;
+      await AdminAuth.authFetch(`/api/treatments/${id}`, { method: "DELETE" });
+      loadTreatments();
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      formError.classList.remove("show");
+
+      const id = document.getElementById("treatmentId").value;
+      const specialistIds = Array.from(document.querySelectorAll("#specialistCheckboxes input:checked")).map((el) => el.value);
+
+      const payload = {
+        name: document.getElementById("name").value,
+        category: document.getElementById("category").value,
+        costUsd: parseFloat(document.getElementById("costUsd").value),
+        durationValue: parseInt(document.getElementById("durationValue").value, 10),
+        durationUnit: document.getElementById("durationUnit").value,
+        description: document.getElementById("description").value,
+        historyOfProcedure: document.getElementById("historyOfProcedure").value,
+        patientRequirements: document.getElementById("patientRequirements").value,
+        images: (() => {
+          const url = document.getElementById("imageUrl").value.trim();
+          return url ? [url] : [];
+        })(),
+        specialistIds,
+      };
+
+      try {
+        if (id) {
+          payload.isPublished = document.getElementById("isPublished").checked;
+          await AdminAuth.authFetch(`/api/treatments/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+        } else {
+          await AdminAuth.authFetch("/api/treatments", { method: "POST", body: JSON.stringify(payload) });
+        }
+        closeModal();
+        loadTreatments();
+      } catch (err) {
+        formError.textContent = err.message;
+        formError.classList.add("show");
+      }
+    });
+
+    (async () => {
+      await loadSpecialists();
+      await loadTreatments();
+    })();
+  </script>
+</body>
+</html>

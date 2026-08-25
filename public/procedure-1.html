@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hormone & Thyroid Support | AuraMed</title>
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600&family=Playfair+Display:ital,wght=0,400;0,500;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1c2b24; /* Deep, luxury botanical green */
+            --primary-light: #2d4239;
+            --accent: #d4af37; /* Warm understated gold tint */
+            --bg-sand: #faf8f5; /* Ultra-premium warm white off-shade */
+            --text-dark: #222222;
+            --text-muted: #666666;
+            --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 400;
+            color: var(--primary);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        /* Persistent Premium Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(250, 248, 245, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(28, 43, 36, 0.05);
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .logo span {
+            font-size: 0.8rem;
+            display: block;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: -2px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        nav a {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 400;
+            color: var(--primary);
+            padding: 0.5rem 0;
+            display: block;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            border-top: 2px solid var(--primary);
+        }
+
+        .dropdown-menu a {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dark);
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--bg-sand);
+            color: var(--accent);
+        }
+
+        .cta-btn {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 0.9rem 2rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 1px solid var(--primary);
+            display: inline-block;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .cta-btn:hover {
+            background-color: transparent;
+            color: var(--primary);
+        }
+
+        .cta-btn.accent-btn {
+            background-color: var(--accent);
+            color: var(--primary);
+            border-color: var(--accent);
+            font-weight: 500;
+        }
+
+        .cta-btn.accent-btn:hover {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        /* Split Canvas Hero */
+        .split-hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+            padding-top: 6rem;
+            background-color: #ffffff;
+        }
+
+        .hero-left-canvas {
+            padding: 6rem 5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 1px solid rgba(28, 43, 36, 0.05);
+        }
+
+        .hero-right-canvas {
+            position: relative;
+            background-color: var(--bg-sand);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+        }
+
+        .category-tag {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-left-canvas h1 {
+            font-size: 4.5rem;
+            line-height: 1.05;
+            letter-spacing: -1px;
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            font-weight: 300;
+            color: var(--text-muted);
+            line-height: 1.8;
+            max-width: 540px;
+        }
+
+        /* Mosaic Layout */
+        .mosaic-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(12, 1fr);
+        }
+
+        .mosaic-img-one {
+            grid-column: 1 / 9;
+            grid-row: 1 / 9;
+            z-index: 2;
+            box-shadow: 0 30px 60px rgba(28,43,36,0.08);
+            overflow: hidden;
+        }
+
+        .mosaic-img-two {
+            grid-column: 5 / 13;
+            grid-row: 5 / 13;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .mosaic-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .mosaic-container :hover img {
+            transform: scale(1.05);
+        }
+
+        /* Generic Showcase Wrapper */
+        .content-showcase {
+            background-color: #ffffff;
+            padding: 10rem 6rem;
+            border-top: 1px solid rgba(28, 43, 36, 0.05);
+        }
+
+        .content-showcase.bg-alt {
+            background-color: var(--bg-sand);
+        }
+
+        .section-headline {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subheadline {
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5rem;
+            font-weight: 400;
+        }
+
+        /* Info Stripes Layout */
+        .info-stripes {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stripe-row {
+            display: grid;
+            grid-template-columns: 3fr 9fr;
+            padding: 4rem 0;
+            border-bottom: 1px solid rgba(28, 43, 36, 0.08);
+            align-items: start;
+        }
+
+        .stripe-row:first-child {
+            border-top: 1px solid rgba(28, 43, 36, 0.08);
+        }
+
+        .stripe-title h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .stripe-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .stripe-body p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.8;
+        }
+
+        .stripe-body ul {
+            list-style: none;
+        }
+
+        .stripe-body li {
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .stripe-body li::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: var(--accent);
+            border-radius: 50%;
+        }
+
+        /* Analytics and Graphical Representation */
+        .analytics-container {
+            max-width: 1100px;
+            margin: 0 auto 5rem auto;
+            display: grid;
+            grid-template-columns: 7fr 5fr;
+            gap: 4rem;
+            background: #ffffff;
+            padding: 4rem;
+            border: 1px solid rgba(28, 43, 36, 0.06);
+        }
+
+        .chart-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 300px;
+            border-bottom: 2px solid var(--primary);
+            border-left: 2px solid rgba(28, 43, 36, 0.1);
+            padding-left: 2rem;
+            padding-top: 1rem;
+        }
+
+        .chart-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 100%;
+            width: 100%;
+        }
+
+        .chart-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 22%;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .bar-element {
+            width: 100%;
+            background-color: rgba(28, 43, 36, 0.1);
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .bar-element.active-metric {
+            background-color: var(--primary);
+        }
+
+        .bar-element:hover {
+            background-color: var(--accent);
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .bar-element:hover {
+            background-color: var(--accent);
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .bar-label {
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .chart-legend-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .chart-legend-box h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-legend-box p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Stats & Analytics Metric Matrix */
+        .metrics-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .metric-card {
+            background: #ffffff;
+            padding: 3rem 2rem;
+            border-top: 3px solid var(--accent);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.02);
+            text-align: center;
+        }
+
+        .metric-card.highlight {
+            background: var(--primary);
+            border-top-color: var(--accent);
+        }
+
+        .metric-card.highlight .metric-num,
+        .metric-card.highlight .metric-label {
+            color: #ffffff;
+        }
+
+        .metric-card.highlight .metric-desc {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .metric-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .metric-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* Patient Experience Timeline */
+        .timeline-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .timeline-step {
+            display: grid;
+            grid-template-columns: 3fr 9fr;
+            padding: 3.5rem 0;
+            position: relative;
+        }
+
+        .timeline-step:not(:last-child) {
+            border-bottom: 1px solid rgba(28, 43, 36, 0.05);
+        }
+
+        .step-index-box {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .step-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .step-time {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .step-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .step-content p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            max-width: 750px;
+        }
+
+        /* Specialists Showcase Layout */
+        .specialist-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .specialist-profile-card {
+            background: #ffffff;
+            border: 1px solid rgba(28, 43, 36, 0.06);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .specialist-img {
+            height: 400px;
+            overflow: hidden;
+            background-color: var(--bg-sand);
+        }
+
+        .specialist-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .specialist-details {
+            padding: 3rem;
+        }
+
+        .specialist-details h3 {
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .specialist-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2rem;
+        }
+
+        .specialist-bio {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 2rem;
+        }
+
+        .specialist-numbers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            border-top: 1px solid rgba(28, 43, 36, 0.08);
+            padding-top: 1.5rem;
+        }
+
+        .num-block span {
+            display: block;
+        }
+
+        .num-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .num-lbl {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        /* Premium Investment Layout */
+        .pricing-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid rgba(28, 43, 36, 0.08);
+            padding: 4rem;
+        }
+
+        .price-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid rgba(28, 43, 36, 0.08);
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .price-tag {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: var(--primary);
+        }
+
+        .price-tag span {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .price-inclusions h4 {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .inclusions-grid {
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .inclusion-item {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .inclusion-item::before {
+            content: "✓";
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .pricing-action {
+            display: flex;
+            justify-content: center;
+        }
+
+        .pricing-action .cta-btn {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Procedure History & Facts Layout */
+        .history-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .history-text h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .history-text p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        .history-text ul {
+            list-style: none;
+            margin-top: 1.5rem;
+        }
+
+        .history-text li {
+            font-size: 1rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            font-weight: 400;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+
+        .history-text li strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .history-text li::before {
+            content: "✦";
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .history-image-wrapper {
+            height: 500px;
+            overflow: hidden;
+            border: 1px solid rgba(28, 43, 36, 0.06);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.03);
+        }
+
+        .history-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .history-image-wrapper:hover img {
+            transform: scale(1.03);
+        }
+
+        /* Editorial Banner */
+        .editorial-banner {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 10rem 6rem;
+            text-align: center;
+        }
+
+        .editorial-banner-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .editorial-banner h2 {
+            color: #ffffff;
+            font-size: 2.8rem;
+            line-height: 1.4;
+            font-style: italic;
+            margin-bottom: 3rem;
+        }
+
+        .editorial-banner .cta-btn {
+            background-color: var(--accent);
+            color: var(--primary);
+            border-color: var(--accent);
+            padding: 1.2rem 3rem;
+        }
+
+        .editorial-banner .cta-btn:hover {
+            background-color: transparent;
+            color: #ffffff;
+            border-color: #ffffff;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 6rem 4rem 2rem 4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 4rem;
+            padding-bottom: 4rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-brand h3 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+            font-size: 0.95rem;
+            max-width: 320px;
+        }
+
+        .footer-column h4 {
+            color: var(--accent);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .footer-column a {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .footer-column a:hover {
+            color: #ffffff;
+            padding-left: 4px;
+        }
+
+        .footer-newsletter p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+            font-weight: 300;
+        }
+
+        .newsletter-form {
+            display: flex;
+        }
+
+        .newsletter-form input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem 1rem;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            flex-grow: 1;
+            outline: none;
+        }
+
+        .newsletter-form button {
+            background: var(--accent);
+            border: none;
+            color: var(--primary);
+            padding: 0 1.5rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .newsletter-form button:hover {
+            background: #ffffff;
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Responsive Matrix */
+        @media(max-width: 1024px) {
+            header { padding: 1.5rem 2rem; }
+            .split-hero { grid-template-columns: 1fr; min-height: auto; }
+            .hero-left-canvas { padding: 6rem 2rem 4rem 2rem; border-right: none; }
+            .hero-right-canvas { height: 500px; padding: 2rem; }
+            .content-showcase { padding: 6rem 2rem; }
+            .analytics-container { grid-template-columns: 1fr; padding: 2rem; gap: 2.5rem; }
+            .stripe-row { grid-template-columns: 1fr; gap: 1.5rem; padding: 3rem 0; }
+            .stripe-body { grid-template-columns: 1fr; gap: 2rem; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .timeline-step { grid-template-columns: 1fr; gap: 1rem; padding: 2.5rem 0; }
+            .specialist-grid { grid-template-columns: 1fr; }
+            .inclusions-grid { grid-template-columns: 1fr; }
+            .history-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+            .history-image-wrapper { height: 400px; }
+            .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 3rem; }
+        }
+
+        @media(max-width: 768px) {
+            nav, header .cta-btn { display: none; }
+            .hero-left-canvas h1 { font-size: 3.2rem; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .pricing-container { padding: 2rem; }
+            .editorial-banner { padding: 6rem 2rem; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation Matrix -->
+    <header>
+        <a href="index.html" class="logo">
+            AURAMED
+            <span>Spa & Wellness</span>
+        </a>
+       <nav>
+            <ul>
+                <li><a href="who-we-are.html">Who We Are</a></li>
+                <li><a href="treatments.html">Treatments</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <!-- Matrix Tab with Dropdown Framework -->
+                <li class="dropdown">
+                    <a href="#">Matrix ▾</a>
+                    <div class="dropdown-menu">
+                        <a href="#">Blog</a>
+                        <a href="#">FAQs</a>
+                        <a href="#">Terms</a>
+                        <a href="results.html">Our Results</a>
+                    </div>
+                </li>
+                <li><a href="team.html">Our Team</a></li>
+                <li><a href="contact.html">Get In Touch</a></li>
+            </ul>
+        </nav>
+        <a href="appointment.html" class="cta-btn">Book Appointment</a>
+    </header>
+
+    <!-- Split Canvas Hero -->
+    <main class="split-hero">
+        <div class="hero-left-canvas">
+            <span class="category-tag">Therapeutic Systems</span>
+            <h1>Hormone &<br>Thyroid Support</h1>
+            <p class="hero-description">
+                A definitive clinical methodology tracking molecular balance, cellular energy restoration, and foundational metabolic equilibrium from within.
+            </p>
+        </div>
+        
+        <div class="hero-right-canvas">
+            <div class="mosaic-container">
+                <div class="mosaic-img-one">
+                    <img src="/images/gallery/img-028-15760911-w600.jpg" alt="Endocrine Precision Testing">
+                </div>
+                <div class="mosaic-img-two">
+                    <img src="/images/gallery/img-044-16123493-w600.jpg" alt="Cellular Integration Therapy">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Section 1: Clinical Statistics & Integrated Data Graph -->
+    <section class="content-showcase bg-alt">
+        <h2 class="section-headline">Clinical Performance & Metrics</h2>
+        <p class="section-subheadline">An analytical look at optimization results and global benchmarks</p>
+        
+        <!-- Interactive Native CSS Graphics Module -->
+        <div class="analytics-container">
+            <div class="chart-wrapper">
+                <div class="chart-bars">
+                    <div class="chart-column">
+                        <div class="bar-element" style="height: 60%;">
+                            <span class="bar-value">60%</span>
+                        </div>
+                        <span class="bar-label">Undiagnosed</span>
+                    </div>
+                    <div class="chart-column">
+                        <div class="bar-element" style="height: 40%;">
+                            <span class="bar-value">12.5%</span>
+                        </div>
+                        <span class="bar-label">Population Baseline</span>
+                    </div>
+                    <div class="chart-column">
+                        <div class="bar-element" style="height: 78%;">
+                            <span class="bar-value">3.4x</span>
+                        </div>
+                        <span class="bar-label">Dermal Decline</span>
+                    </div>
+                    <div class="chart-column">
+                        <div class="bar-element active-metric" style="height: 94.8%;">
+                            <span class="bar-value">94.8%</span>
+                        </div>
+                        <span class="bar-label">AuraMed Success Rate</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-legend-box">
+                <h3>Systemic Biomarker Optimization</h3>
+                <p>The matrix visualizes tracked physiological impacts alongside program outcomes. Over 94% of patients reach targeted biomarker balance metrics within 90 days of implementing our optimization system.</p>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">* Data sourced via quarterly clinical verification assessments from our internal laboratory matrix.</p>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card highlight">
+                <span class="metric-num">94.8%</span>
+                <span class="metric-label">AuraMed Success Rate</span>
+                <p class="metric-desc">Verified biomarker stabilization and symptomatic resolution within 90 days of system track implementation.</p>
+            </div>
+            <div class="metric-card">
+                <span class="metric-num">1 in 8</span>
+                <span class="metric-label">Epidemiological Baseline</span>
+                <p class="metric-desc">Statistically verified proportion of individuals developing underlying thyroid variations globally.</p>
+            </div>
+            <div class="metric-card">
+                <span class="metric-num">60%</span>
+                <span class="metric-label">Undiagnosed Margin</span>
+                <p class="metric-desc">Clinical ratio of adults currently navigating active metabolic variations without verified targeted analytics.</p>
+            </div>
+            <div class="metric-card">
+                <span class="metric-num">3.4x</span>
+                <span class="metric-label">Dermal Correlation</span>
+                <p class="metric-desc">Measured acceleration rate of structural skin moisture-barrier decline when cell metabolism remains unbalanced.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Core Methodology Architecture -->
+    <section class="content-showcase">
+        <h2 class="section-headline">The Pathway Architecture</h2>
+        <p class="section-subheadline">The deep mechanics of biological balancing</p>
+        <div class="info-stripes">
+            <div class="stripe-row">
+                <div class="stripe-title">
+                    <h3>01 / Purpose</h3>
+                </div>
+                <div class="stripe-body">
+                    <p>Internal biochemistry acts as the master baseline for outer cellular presentation, skin moisture barrier resilience, and daily vitality profiles. When thyroid metrics shift or adrenal states experience chronic fatigue, the physical systems display clear functional declines.</p>
+                    <p>Our specialized Hormone & Thyroid Support track avoids temporary surface solutions. We apply clean, precise botanical integrations and deep diagnostics to realign your neuroendocrine systems safely.</p>
+                </div>
+            </div>
+            <div class="stripe-row">
+                <div class="stripe-title">
+                    <h3>02 / Assessment</h3>
+                </div>
+                <div class="stripe-body">
+                    <p>Absolute precision is our primary therapeutic rule. Every optimization protocol begins with a deep, laboratory-verified dive into active metabolic pathways, assessing critical internal metrics rather than using generalized symptoms.</p>
+                    <ul>
+                        <li>Free T3 & Free T4 Serum Mapping</li>
+                        <li>High-Resolution TSH Homeostasis Assessment</li>
+                        <li>Adrenal Stress & Cortisol Pattern Diagnostics</li>
+                        <li>Micronutrient Co-Factor Integrity Analysis</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Patient Journey - What to Expect -->
+    <section class="content-showcase bg-alt">
+        <h2 class="section-headline">The Patient Experience Blueprint</h2>
+        <p class="section-subheadline">What to expect throughout your therapeutic timeline</p>
+        
+        <div class="timeline-container">
+            <!-- Step 1 -->
+            <div class="timeline-step">
+                <div class="step-index-box">
+                    <span class="step-num">01</span>
+                    <span class="step-time">Day 1</span>
+                </div>
+                <div class="step-content">
+                    <h3>The Precision Diagnostic Blueprint</h3>
+                    <p>Your journey begins with an initial high-resolution blood draw and systemic endocrine evaluation. We capture precise data across a comprehensive thyroid and cellular stress matrix to uncover exact functional imbalances.</p>
+                </div>
+            </div>
+            <!-- Step 2 -->
+            <div class="timeline-step">
+                <div class="step-index-box">
+                    <span class="step-num">02</span>
+                    <span class="step-time">Week 2</span>
+                </div>
+                <div class="step-content">
+                    <h3>The Specialist System Mapping</h3>
+                    <p>You will meet privately with your assigned clinical practitioner for a detailed review of your diagnostics. Together, you will finalize a customized balancing protocol that integrates precise nutrition strategies, targeted co-factors, and gentle therapeutic modulations.</p>
+                </div>
+            </div>
+            <!-- Step 3 -->
+            <div class="timeline-step">
+                <div class="step-index-box">
+                    <span class="step-num">03</span>
+                    <span class="step-time">Week 4 - 8</span>
+                </div>
+                <div class="step-content">
+                    <h3>Systemic Cellular Adaptation</h3>
+                    <p>As your internal systems align, patients typically experience noticeable improvements in daily energy patterns, sleep quality, and baseline mental clarity. The body safely shifts toward long-term homeostasis.</p>
+                </div>
+            </div>
+            <!-- Step 4 -->
+            <div class="timeline-step">
+                <div class="step-index-box">
+                    <span class="step-num">04</span>
+                    <span class="step-time">Day 90+</span>
+                </div>
+                <div class="step-content">
+                    <h3>Biomarker Mapping & Sustained Renewal</h3>
+                    <p>A second evaluation confirms your biochemical progress. Your long-term maintenance track is updated to preserve skin tissue vitality, cellular density, and optimal metabolic output for the year ahead.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: The Specialized Practitioners -->
+    <section class="content-showcase">
+        <h2 class="section-headline">Practitioner Assignment Matrix</h2>
+        <p class="section-subheadline">Assigned specialists uniquely suited to your clinical success</p>
+        <div class="specialist-grid">
+            
+            <!-- Specialist 1 -->
+            <div class="specialist-profile-card">
+                <div class="specialist-img">
+                    <img src="/images/gallery/img-027-15734963-w600.jpg" alt="Dr. Evelyn Thorne">
+                </div>
+                <div class="specialist-details">
+                    <h3>Dr. Evelyn Thorne</h3>
+                    <span class="specialist-title">Medical Director / Endocrine Specialist</span>
+                    <p class="specialist-bio">Overseeing AuraMed's high-precision integration protocols, Dr. Thorne focuses exclusively on connecting core cellular biology with safe metabolic systems to restore lasting structural vitality.</p>
+                    <div class="specialist-numbers">
+                        <div class="num-block">
+                            <span class="num-val">14+</span>
+                            <span class="num-lbl">Years Experience</span>
+                        </div>
+                        <div class="num-block">
+                            <span class="num-val">2.5k+</span>
+                            <span class="num-lbl">Evaluations Completed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specialist 2 -->
+            <div class="specialist-profile-card">
+                <div class="specialist-img">
+                    <img src="/images/gallery/img-052-16222536-w600.jpg" alt="Dr. Marcus Vance">
+                </div>
+                <div class="specialist-details">
+                    <h3>Dr. Marcus Vance</h3>
+                    <span class="specialist-title">Lead Clinical Endocrinologist</span>
+                    <p class="specialist-bio">A leading expert in metabolic profiling, Dr. Vance integrates advanced cellular mapping to locate and adjust small systemic stress imbalances before they manifest outwardly.</p>
+                    <div class="specialist-numbers">
+                        <div class="num-block">
+                            <span class="num-val">11+</span>
+                            <span class="num-lbl">Years Experience</span>
+                        </div>
+                        <div class="num-block">
+                            <span class="num-val">96.2%</span>
+                            <span class="num-lbl">Biomarker Alignment Target</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Section 5: Premium Investment Framework -->
+    <section class="content-showcase bg-alt">
+        <h2 class="section-headline">Program Investment Architecture</h2>
+        <p class="section-subheadline">Transparent financial framing for specialized care</p>
+        <div class="pricing-container">
+            <div class="price-header">
+                <div>
+                    <h3>Comprehensive Balancing Program</h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 300; margin-top: 0.5rem;">Initial Diagnostics & Systems Design Track</p>
+                </div>
+                <div class="price-tag">$450 <span>/ Starting Price</span></div>
+            </div>
+            <div class="price-inclusions">
+                <h4>Core Program Inclusions</h4>
+                <div class="inclusions-grid">
+                    <span class="inclusion-item">Complete High-Resolution Biomarker Panel</span>
+                    <span class="inclusion-item">Private Consultation with Assigned Specialist</span>
+                    <span class="inclusion-item">Personalized Endocrine & Thyroid Map Design</span>
+                    <span class="inclusion-item">Targeted Micronutrient Co-Factor Blueprint</span>
+                    <span class="inclusion-item">Follow-up Homeostasis Evaluation Session</span>
+                    <span class="inclusion-item">Integrated Dermal Synergy Matrix Analysis</span>
+                </div>
+                <div class="pricing-action">
+                    <a href="#" class="cta-btn accent-btn">Book Your Program Appointment</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Procedure History and Facts -->
+    <section class="content-showcase">
+        <h2 class="section-headline">Procedure History & Facts</h2>
+        <p class="section-subheadline">The evolution and foundational truths of endocrine optimization</p>
+        <div class="history-grid">
+            <div class="history-text">
+                <h3>The Evolution of Endocrine Balancing</h3>
+                <p>The foundations of hormone and thyroid support trace back to the early 20th century, when clinical pioneers first identified the profound role thyroid extracts played in metabolic regulation. Over decades, generalized therapies shifted toward endocrinology mapping, allowing for the micro-targeted cellular solutions used today.</p>
+                <p>Modern functional treatments combine legacy medical practices with clean molecular medicine, creating customized blueprints that treat internal chemistry as a whole rather than addressing symptoms on a surface level.</p>
+                
+                <h3>Key Institutional Facts</h3>
+                <ul>
+                    <li><strong>Biochemical Individuality:</strong> No two endocrine pathways are identical; individual hormone production fluctuates daily based on biological markers, environment, and stress.</li>
+                    <li><strong>The Co-Factor Nexus:</strong> Essential elements like selenium, zinc, and iodine serve as critical triggers for activating thyroid hormones at a cellular level.</li>
+                    <li><strong>Systemic Integration:</strong> Well-regulated metabolic systems naturally support skin structure, tissue hydration, and sustained neurological energy.</li>
+                </ul>
+            </div>
+            <div class="history-image-wrapper">
+                <img src="/images/gallery/img-030-15810912-w600.jpg" alt="Clinical Laboratory Endocrine Research">
+            </div>
+        </div>
+    </section>
+
+    <!-- Dramatic Minimal Narrative Callout Banner -->
+    <section class="editorial-banner">
+        <div class="editorial-banner-content">
+            <h2>"Authentic vitality is not a superficial effect. It is the precise outward signature of structural biochemical balance running flawlessly."</h2>
+            <a href="#" class="cta-btn">Begin Your Diagnostic Track</a>
+        </div>
+    </section>
+
+    <!-- Luxury Bulwark Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3>AURAMED</h3>
+                <p>Setting a premium standard in clinical medspa environments through plant-powered biological treatments and meticulous precision.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="who-we-are.html">Who We Are</a></li>
+                    <li><a href="#">Treatments</a></li>
+                    <li><a href="#">Shop Products</a></li>
+                    <li><a href="#">Online Booking</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Matrix</h4>
+                <ul>
+                    <li><a href="#">Clinical Blog</a></li>
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="#">Our Results</a></li>
+                    <li><a href="#">Terms of Care</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter">
+                <h4>Stay Informed</h4>
+                <p>Subscribe to receive aesthetic research updates and priority scheduling access.</p>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Your Email Address">
+                    <button type="button">Join</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 AuraMed Spa & Wellness. Architecture by Clean Luxury Design.</p>
+            <p>Privacy Policy &nbsp;&middot;&nbsp; Terms of Service</p>
+        </div>
+    </footer>
+
+</body>
+</html>

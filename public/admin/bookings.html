@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Queue | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <style>
+    .conflict-note { color: var(--danger); font-size: 0.78rem; margin-top: 0.25rem; }
+    .booking-actions { display: flex; flex-direction: column; gap: 0.4rem; min-width: 220px; }
+    .booking-actions select { padding: 0.35rem; font-size: 0.82rem; border: 1px solid var(--border); border-radius: 6px; }
+    .booking-actions .row { display: flex; gap: 0.4rem; }
+    h2.section-title { margin: 2.5rem 0 1rem; font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Booking Queue</h1>
+          <p>Request-and-confirm: assign a specialist, then confirm or decline</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Treatment</th><th>Requested</th><th>Contact</th><th>Channel</th><th>Notes</th><th>Action</th></tr></thead>
+          <tbody id="pendingRows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="pendingEmpty" style="display:none">No pending requests right now.</div>
+
+      <h2 class="section-title">All Bookings</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Treatment</th><th>Requested</th><th>Contact</th><th>Specialist</th><th>Status</th><th>Payment</th></tr></thead>
+          <tbody id="allRows"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN", "STAFF"]);
+    AdminAuth.renderSidebar("bookings.html");
+
+    let specialists = [];
+
+    function contactLine(b) {
+      if (b.member) return `${b.member.firstName} ${b.member.lastName}<br><span style="color:var(--text-muted); font-size:0.78rem;">${b.member.email}</span>`;
+      return `${b.guestName || "Guest"}<br><span style="color:var(--text-muted); font-size:0.78rem;">${b.guestEmail || b.guestPhone || ""}</span>`;
+    }
+
+    async function loadSpecialists() {
+      specialists = await AdminAuth.authFetch("/api/specialists");
+    }
+
+    async function loadPending() {
+      const bookings = await AdminAuth.authFetch("/api/bookings/pending");
+      document.getElementById("pendingEmpty").style.display = bookings.length ? "none" : "block";
+      document.getElementById("pendingRows").innerHTML = bookings.map((b) => `
+        <tr id="booking-${b.id}">
+          <td>${b.treatment ? b.treatment.name : "—"}</td>
+          <td>${new Date(b.requestedDatetime).toLocaleString()}</td>
+          <td>${contactLine(b)}</td>
+          <td>${b.notificationChannel}</td>
+          <td style="max-width:220px;">${b.notes
+            ? `<span style="color:var(--danger); font-weight:500;" title="${b.notes.replace(/"/g, '&quot;')}">⚠ ${b.notes.length > 60 ? b.notes.slice(0, 60) + "…" : b.notes}</span>`
+            : `<span style="color:var(--text-muted);">—</span>`}</td>
+          <td>
+            <div class="booking-actions">
+              <select id="specSelect-${b.id}">
+                <option value="">— assign specialist —</option>
+                ${specialists.map((s) => `<option value="${s.id}" ${b.specialistId === s.id ? "selected" : ""}>${s.name}</option>`).join("")}
+              </select>
+              <div id="conflict-${b.id}"></div>
+              <div class="row">
+                <button class="btn btn-outline btn-small" onclick="assignSpecialist('${b.id}')">Assign</button>
+              </div>
+              <select id="paySelect-${b.id}">
+                <option value="PAY_NOW">Pay now to confirm</option>
+                <option value="PAY_LATER">Confirm now, pay later</option>
+              </select>
+              <div class="row">
+                <button class="btn btn-small" onclick="confirmBooking('${b.id}')" ${b.specialistId ? "" : "disabled"}>Confirm</button>
+                <button class="btn btn-danger btn-small" onclick="declineBooking('${b.id}')">Decline</button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    async function loadAll() {
+      const bookings = await AdminAuth.authFetch("/api/bookings");
+      document.getElementById("allRows").innerHTML = bookings.map((b) => `
+        <tr>
+          <td>${b.treatment ? b.treatment.name : "—"}</td>
+          <td>${new Date(b.requestedDatetime).toLocaleString()}</td>
+          <td>${contactLine(b)}</td>
+          <td>${b.specialist ? b.specialist.name : "—"}</td>
+          <td><span class="badge badge-${b.status.toLowerCase()}">${b.status}</span></td>
+          <td>${b.paymentOption ? b.paymentOption.replace("_", " ") : "—"}</td>
+        </tr>
+      `).join("");
+    }
+
+    window.assignSpecialist = async (id) => {
+      const specialistId = document.getElementById(`specSelect-${id}`).value;
+      if (!specialistId) return alert("Choose a specialist first.");
+      const result = await AdminAuth.authFetch(`/api/bookings/${id}/assign`, {
+        method: "PATCH",
+        body: JSON.stringify({ specialistId }),
+      });
+      document.getElementById(`conflict-${id}`).innerHTML = result.conflictWarning
+        ? '<div class="conflict-note">⚠ This specialist has another booking at this time — double check before confirming.</div>'
+        : "";
+      // enable Confirm button now that a specialist is assigned
+      document.querySelector(`#booking-${id} .row button.btn:not(.btn-outline):not(.btn-danger)`).disabled = false;
+    };
+
+    window.confirmBooking = async (id) => {
+      const paymentOption = document.getElementById(`paySelect-${id}`).value;
+      await AdminAuth.authFetch(`/api/bookings/${id}/confirm`, {
+        method: "PATCH",
+        body: JSON.stringify({ paymentOption }),
+      });
+      loadPending();
+      loadAll();
+    };
+
+    window.declineBooking = async (id) => {
+      if (!confirm("Decline this booking request?")) return;
+      await AdminAuth.authFetch(`/api/bookings/${id}/decline`, { method: "PATCH" });
+      loadPending();
+      loadAll();
+    };
+
+    (async () => {
+      await loadSpecialists();
+      await loadPending();
+      await loadAll();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Redirecting…</title></head>
+<body>
+  <script src="/admin/admin.js"></script>
+  <script>
+    window.location.href = AdminAuth.getToken() ? "/admin/dashboard.html" : "/admin/login.html";
+  </script>
+</body>
+</html>

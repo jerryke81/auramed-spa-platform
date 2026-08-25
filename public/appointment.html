@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule a Consultation | AuraMed</title>
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600&family=Playfair+Display:ital,wght=0,400;0,500;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1c2b24; /* Deep, luxury botanical green */
+            --primary-light: #2d4239;
+            --accent: #d4af37; /* Warm understated gold tint */
+            --bg-sand: #faf8f5; /* Ultra-premium warm white off-shade */
+            --text-dark: #222222;
+            --text-muted: #666666;
+            --border-light: rgba(28, 43, 36, 0.08);
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 400;
+            color: var(--primary);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        /* Persistent Premium Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(250, 248, 245, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(28, 43, 36, 0.05);
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .logo span {
+            font-size: 0.8rem;
+            display: block;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: -2px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        nav a {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 400;
+            color: var(--primary);
+            padding: 0.5rem 0;
+        }
+
+        /* Premium Dropdown Framework */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            min-width: 160px;
+            display: flex;
+            flex-direction: column;
+            padding: 0.8rem 0;
+            box-shadow: 0 15px 35px rgba(28, 43, 36, 0.06);
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 1100;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .dropdown-menu a {
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            padding: 0.6rem 1.5rem;
+            text-transform: uppercase;
+            color: var(--primary);
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--bg-sand);
+            color: var(--accent);
+            padding-left: 1.8rem;
+        }
+
+        .cta-btn {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 0.9rem 2rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 1px solid var(--primary);
+            display: inline-block;
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .cta-btn:hover {
+            background-color: transparent;
+            color: var(--primary);
+        }
+
+        /* Main Booking Layout split */
+        .booking-hero {
+            padding: 11rem 4rem 3rem 4rem;
+            text-align: center;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .booking-hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .booking-hero p {
+            color: var(--text-muted);
+            font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .booking-container {
+            max-width: 1200px;
+            margin: 4rem auto 8rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 2.5fr 1.2fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        /* Interactive Interface Steps */
+        .booking-flow {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            padding: 3rem;
+            box-shadow: 0 30px 70px rgba(28, 43, 36, 0.02);
+        }
+
+        .step-section {
+            margin-bottom: 3.5rem;
+        }
+
+        .step-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.8rem;
+        }
+
+        .step-number {
+            font-size: 0.85rem;
+            font-weight: 600;
+            background-color: var(--bg-sand);
+            color: var(--primary);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 1px solid rgba(28, 43, 36, 0.1);
+        }
+
+        .step-header h2 {
+            font-size: 1.6rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Custom Modern Radio/Checkbox Grids */
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .selection-card {
+            position: relative;
+            border: 1px solid var(--border-light);
+            padding: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #ffffff;
+        }
+
+        .selection-card:hover {
+            border-color: var(--primary);
+            background-color: rgba(28, 43, 36, 0.01);
+        }
+
+        .selection-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .selection-card .card-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .selection-card .title {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .selection-card .meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* Active State logic managed neatly via adjacent sibling selector */
+        .selection-card input[type="radio"]:checked + .card-content-wrapper {
+            background: #red;
+        }
+        
+        /* Simulating selection visually via standard focus/active hooks or basic JS classes later, styled here directly */
+        .selection-card.active {
+            border-color: var(--accent);
+            background-color: var(--bg-sand);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+
+        /* Clinician Specific Grid UI */
+        .clinician-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid var(--border-light);
+            padding: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .clinician-card:hover {
+            border-color: var(--primary);
+        }
+
+        .clinician-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--bg-sand);
+            object-fit: cover;
+        }
+
+        /* Calendar & Time Frame UI Matrix */
+        .datetime-container {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .calendar-input-wrapper input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border-light);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            color: var(--primary);
+            background-color: var(--bg-sand);
+        }
+
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .time-slot {
+            border: 1px solid var(--border-light);
+            padding: 0.7rem;
+            text-align: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .time-slot:hover {
+            border-color: var(--primary);
+        }
+
+        .time-slot.active {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        /* Premium Form Elements */
+        .form-group-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-control {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .form-control label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.4rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-control input, .form-control textarea {
+            padding: 1rem;
+            border: 1px solid var(--border-light);
+            background-color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-control input:focus, .form-control textarea:focus {
+            border-color: var(--primary);
+            background-color: var(--bg-sand);
+        }
+
+        /* Summary Sidebar Sticky Module */
+        .booking-summary-sidebar {
+            position: sticky;
+            top: 7rem;
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 2.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .booking-summary-sidebar h3 {
+            color: #ffffff;
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.8rem;
+        }
+
+        .summary-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .summary-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 0.2rem;
+        }
+
+        .summary-value {
+            font-size: 0.95rem;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .summary-total-strip {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .total-price {
+            font-size: 1.8rem;
+            font-family: 'Playfair Display', serif;
+            color: var(--accent);
+        }
+
+        /* Footer Alignment */
+        footer {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 6rem 4rem 2rem 4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 4rem;
+            padding-bottom: 4rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-brand h3 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+            font-size: 0.95rem;
+            max-width: 320px;
+        }
+
+        .footer-column h4 {
+            color: var(--accent);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .footer-column a {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .footer-column a:hover {
+            color: #ffffff;
+            padding-left: 4px;
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Responsive Matrix Breakpoints */
+        @media(max-width: 1024px) {
+            header { padding: 1.5rem 2rem; }
+            .booking-container { grid-template-columns: 1fr; gap: 3rem; }
+            .booking-summary-sidebar { position: relative; top: 0; }
+            .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 3rem; }
+        }
+
+        @media(max-width: 768px) {
+            .selection-grid, .datetime-container, .form-group-row { grid-template-columns: 1fr; }
+            .booking-flow { padding: 1.5rem; }
+            .booking-hero h1 { font-size: 2.6rem; }
+            .footer-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation Matrix -->
+    <header>
+        <a href="index.html" class="logo">
+            AURAMED
+            <span>Spa & Wellness</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="who-we-are.html">Who We Are</a></li>
+                <li><a href="treatments.html">Treatments</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <!-- Matrix Tab with Dropdown Framework -->
+                <li class="dropdown">
+                    <a href="#">Matrix ▾</a>
+                    <div class="dropdown-menu">
+                        <a href="#">Blog</a>
+                        <a href="#">FAQs</a>
+                        <a href="#">Terms</a>
+                        <a href="results.html">Our Results</a>
+                    </div>
+                </li>
+                <li><a href="team.html">Our Team</a></li>
+                <li><a href="contact.html">Get In Touch</a></li>
+            </ul>
+        </nav>
+        <a href="appointment.html" class="cta-btn" style="width: auto; border-color: var(--accent); color: var(--accent);">Book Appointment</a>
+    </header>
+
+    <!-- Page Title Induction -->
+    <section class="booking-hero">
+        <h1>Schedule Your Session</h1>
+        <p>Select your desired clinical treatment and your preferred date and time. Our team will assign your specialist and confirm your slot.</p>
+    </section>
+
+    <!-- Form Interface Section Wrapper -->
+    <div class="booking-container">
+        
+        <!-- Interactive Steps Form Flow -->
+        <form class="booking-flow" id="appointmentForm">
+            
+            <!-- STEP 1: Treatment Choice -->
+            <section class="step-section">
+                <div class="step-header">
+                    <span class="step-number">1</span>
+                    <h2>Choose a Treatment</h2>
+                </div>
+                <div class="selection-grid" id="treatmentGrid">
+                    <!-- Populated by /js/render-appointment.js from GET /api/treatments -->
+                </div>
+                <p class="empty-state-msg" id="treatmentEmptyMsg" style="display:none; color: var(--text-muted); padding: 1rem 0;">No treatments are published yet — please check back soon or contact us directly.</p>
+            </section>
+
+            <!-- STEP 2: Date and Time Preference -->
+            <section class="step-section">
+                <div class="step-header">
+                    <span class="step-number">2</span>
+                    <h2>Preferred Date & Time</h2>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">This is a request, not an instant booking — our team will confirm your specific appointment slot.</p>
+                <div class="datetime-container">
+                    <div class="calendar-input-wrapper">
+                        <div class="form-control">
+                            <label for="booking_date">Preferred Date</label>
+                            <input type="date" id="booking_date" name="booking_date" required>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-control">
+                            <label for="booking_time">Preferred Time</label>
+                            <input type="time" id="booking_time" name="booking_time" required>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STEP 3: Personal Registry Fields -->
+            <section class="step-section">
+                <div class="step-header">
+                    <span class="step-number">3</span>
+                    <h2>Your Details</h2>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-control">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" required placeholder="e.g. Eleanor">
+                    </div>
+                    <div class="form-control">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" required placeholder="e.g. Vance">
+                    </div>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-control">
+                        <label for="email_address">Email Address</label>
+                        <input type="email" id="email_address" required placeholder="name@domain.com">
+                    </div>
+                    <div class="form-control">
+                        <label for="phone_number">Phone Number</label>
+                        <input type="tel" id="phone_number" required placeholder="+1 (555) 000-0000">
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label for="notification_channel">How should we notify you when confirmed?</label>
+                    <select id="notification_channel" required style="width: 100%; padding: 0.8rem; border: 1px solid rgba(28,43,36,0.15); border-radius: 6px; font-family: inherit;">
+                        <option value="email">Email</option>
+                        <option value="sms">SMS / Text</option>
+                        <option value="whatsapp">WhatsApp</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="clinical_notes">Special Treatment Concerns or Medical Notes (Optional)</label>
+                    <textarea id="clinical_notes" rows="4" placeholder="Please declare any dermal allergies, ongoing prescriptions or specific goals..."></textarea>
+                </div>
+            </section>
+
+        </form>
+
+        <!-- Sidebar Summary Matrix Block -->
+        <aside class="booking-summary-sidebar">
+            <h3>Reservation Review</h3>
+            <div class="error-banner" id="formError" style="display:none; background: rgba(168,60,60,0.15); color: #ffb4b4; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem;"></div>
+            <div class="success-banner" id="formSuccess" style="display:none; background: rgba(60,122,79,0.15); color: #a8e0b8; padding: 1rem; border-radius: 6px; font-size: 0.9rem; margin-bottom: 1rem;"></div>
+            <ul class="summary-list" id="summaryList">
+                <li class="summary-item">
+                    <span class="summary-label">Selected Treatment</span>
+                    <span class="summary-value" id="summaryTreatment">Not yet selected</span>
+                </li>
+                <li class="summary-item">
+                    <span class="summary-label">Requested Time</span>
+                    <span class="summary-value" id="summaryDatetime">Not yet selected</span>
+                </li>
+            </ul>
+
+            <div class="summary-total-strip">
+                <span class="total-label">Treatment Cost</span>
+                <span class="total-price" id="summaryPrice">—</span>
+            </div>
+
+            <button type="submit" form="appointmentForm" class="cta-btn" id="submitBtn" style="width: 100%; background-color: var(--accent); color: var(--primary); border-color: var(--accent); font-weight: 600;">Request Appointment</button>
+            <p style="font-size: 0.75rem; color: rgba(255,255,255,0.4); text-align: center; margin-top: 1rem; font-weight: 300;">We'll confirm your specific slot and notify you via your chosen channel.</p>
+        </aside>
+
+    </div>
+
+    <!-- Luxury Footer Alignment Architecture -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3>AURAMED</h3>
+                <p>Setting a premium standard in clinical medspa environments through plant-powered biological treatments and meticulous precision.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="who-we-are.html">Who We Are</a></li>
+                    <li><a href="treatments.html">Treatments</a></li>
+                    <li><a href="shop.html">Shop Products</a></li>
+                    <li><a href="#">Online Booking</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Matrix</h4>
+                <ul>
+                    <li><a href="#">Clinical Blog</a></li>
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="#">Our Results</a></li>
+                    <li><a href="#">Terms of Care</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter">
+                <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 300; margin-bottom: 1rem;">Sign up for clinical insights and reservation availability notices.</p>
+                <div style="display: flex;">
+                    <input type="email" placeholder="Your Email" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; color: white; outline: none; flex-grow: 1;">
+                    <button style="background: var(--accent); border: none; padding: 0 1.2rem; cursor: pointer; color: var(--primary);">Join</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 AuraMed Spa & Wellness. Architecture by Clean Luxury Design.</p>
+            <p>Privacy Policy &nbsp;&middot;&nbsp; Terms of Service</p>
+        </div>
+    </footer>
+
+    <script src="/js/render-appointment.js"></script>
+</body>
+</html>

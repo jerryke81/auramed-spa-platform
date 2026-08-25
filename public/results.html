@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Results & Transformations | AuraMed</title>
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600&family=Playfair+Display:ital,wght=0,400;0,500;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1c2b24; /* Deep, luxury botanical green */
+            --primary-light: #2d4239;
+            --accent: #d4af37; /* Warm understated gold tint */
+            --bg-sand: #faf8f5; /* Ultra-premium warm white off-shade */
+            --text-dark: #222222;
+            --text-muted: #666666;
+            --border-light: rgba(28, 43, 36, 0.08);
+            --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 400;
+            color: var(--primary);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        /* Persistent Premium Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(250, 248, 245, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(28, 43, 36, 0.05);
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .logo span {
+            font-size: 0.8rem;
+            display: block;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: -2px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        nav a {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 400;
+            color: var(--primary);
+            padding: 0.5rem 0;
+        }
+
+        /* Premium Dropdown Framework Fixes */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            min-width: 160px;
+            display: flex;
+            flex-direction: column;
+            padding: 0.8rem 0;
+            box-shadow: 0 15px 35px rgba(28, 43, 36, 0.06);
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 1100;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .dropdown-menu a {
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            padding: 0.6rem 1.5rem;
+            text-transform: uppercase;
+            color: var(--primary);
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--bg-sand);
+            color: var(--accent);
+            padding-left: 1.8rem;
+        }
+
+        .cta-btn {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 0.9rem 2rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 1px solid var(--primary);
+            display: inline-block;
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .cta-btn:hover {
+            background-color: transparent;
+            color: var(--primary);
+        }
+
+        /* Hero Architecture */
+        .results-hero {
+            padding: 12rem 4rem 5rem 4rem;
+            text-align: center;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .results-hero h1 {
+            font-size: 4rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .results-hero p {
+            font-size: 1.2rem;
+            font-weight: 300;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Case Studies Grid Layout */
+        .results-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 5rem 2rem 8rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6rem;
+        }
+
+        .case-study-row {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            padding: 3rem;
+            box-shadow: 0 20px 50px rgba(28, 43, 36, 0.02);
+        }
+
+        /* Alternating layout for elegant editorial pacing */
+        .case-study-row:nth-child(even) {
+            grid-template-columns: 1fr 1.1fr;
+        }
+        .case-study-row:nth-child(even) .comparison-viewport {
+            order: 2;
+        }
+
+        /* Premium Side-by-Side Comparison Framework */
+        .comparison-viewport {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            background-color: var(--bg-sand);
+            border: 1px solid rgba(28, 43, 36, 0.05);
+            padding: 0.5rem;
+        }
+
+        .image-frame {
+            position: relative;
+            overflow: hidden;
+            height: 480px;
+        }
+
+        .image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(15%);
+            transition: var(--transition);
+        }
+
+        .case-study-row:hover .image-frame img {
+            filter: grayscale(0%);
+        }
+
+        .image-label {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(28, 43, 36, 0.85);
+            color: #ffffff;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 0.4rem 0.8rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .image-label.after-label {
+            background: rgba(212, 175, 55, 0.9);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* Case Clinical Specs Content */
+        .case-details h3 {
+            font-size: 2.4rem;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+
+        .case-procedure-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .case-description {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        /* Clinical Data Metrics Strip */
+        .clinical-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1.5rem 0;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .metric-value {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        /* Footer Alignment */
+        footer {
+            background-color: var(--primary);
+            color: #ffffff;
+            padding: 6rem 4rem 2rem 4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            clear: both;
+        }
+
+        .footer-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 4rem;
+            padding-bottom: 4rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-brand h3 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+            font-size: 0.95rem;
+            max-width: 320px;
+        }
+
+        .footer-column h4 {
+            color: var(--accent);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .footer-column a {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .footer-column a:hover {
+            color: #ffffff;
+            padding-left: 4px;
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Responsive Architecture Adaptations */
+        @media(max-width: 1100px) {
+            .case-study-row, .case-study-row:nth-child(even) { 
+                grid-template-columns: 1fr; 
+                gap: 2.5rem;
+                padding: 2rem;
+            }
+            .case-study-row:nth-child(even) .comparison-viewport {
+                order: 0;
+            }
+            .image-frame { height: 380px; }
+        }
+
+        @media(max-width: 1024px) {
+            header { padding: 1.5rem 2rem; }
+            .results-hero { padding: 10rem 2rem 4rem 2rem; }
+            .results-hero h1 { font-size: 3rem; }
+            .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 3rem; }
+        }
+
+        @media(max-width: 650px) {
+            .comparison-viewport { grid-template-columns: 1fr 1fr; gap: 0.25rem; } /* Forced side-by-side on tiny mobile displays */
+            .image-frame { height: 220px; } /* Scaled to remain proportional side-by-side */
+            .clinical-metrics-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .footer-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation Matrix -->
+    <header>
+        <a href="index.html" class="logo">
+            AURAMED
+            <span>Spa & Wellness</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="who-we-are.html">Who We Are</a></li>
+                <li><a href="treatments.html">Treatments</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <!-- Matrix Tab with Dropdown Framework -->
+                <li class="dropdown">
+                    <a href="#">Matrix ▾</a>
+                    <div class="dropdown-menu">
+                        <a href="#">Blog</a>
+                        <a href="#">FAQs</a>
+                        <a href="#">Terms</a>
+                        <a href="results.html">Our Results</a>
+                    </div>
+                </li>
+                <li><a href="team.html">Our Team</a></li>
+                <li><a href="contact.html">Get In Touch</a></li>
+            </ul>
+        </nav>
+        <a href="appointment.html" class="cta-btn">Book Appointment</a>
+    </header>
+
+    <!-- Results Hero Introduction -->
+    <section class="results-hero">
+        <span class="case-procedure-tag" style="margin-bottom: 0.5rem;">Verified Case Studies</span>
+        <h1>Clinical Progress Manifest</h1>
+        <p>Explore real, untouched treatment outcomes. Our approach balances physical symmetry with cellular restoration to yield refined, natural longevity.</p>
+    </section>
+
+    <!-- Case Studies Layout Matrix Container -->
+    <main class="results-container">
+
+        <!-- Case Study 1: Dermal Contouring -->
+        <article class="case-study-row">
+            <div class="comparison-viewport">
+                <div class="image-frame">
+                    <img src="/images/gallery/img-012-15223373-w600.jpg" alt="Dermal Contouring Before Treatment">
+                    <span class="image-label">Before</span>
+                </div>
+                <div class="image-frame">
+                    <img src="/images/gallery/img-034-15964159-w600.jpg" alt="Dermal Contouring After Treatment">
+                    <span class="image-label after-label">After</span>
+                </div>
+            </div>
+            <div class="case-details">
+                <span class="case-procedure-tag">Procedure: Volume Restoration & Fillers</span>
+                <h3>Mid-Face Structural Calibration</h3>
+                <p class="case-description">Patient presented with significant structural deflation in the deep malar pads and fine wrinkling across the lower cheek vectors. Using cross-linked hyaluronic gels, we re-architected deep volume foundations to naturally elevate the mid-face architecture without over-expansion.</p>
+                
+                <div class="clinical-metrics-grid">
+                    <div class="metric-box"><span class="metric-label">Interval</span><span class="metric-value">14 Days Post</span></div>
+                    <div class="metric-box"><span class="metric-label">Clinician</span><span class="metric-value">Dr. Thorne</span></div>
+                    <div class="metric-box"><span class="metric-label">Product Matrix</span><span class="metric-value">Juvéderm Voluma</span></div>
+                </div>
+                <a href="booking.html" class="cta-btn">Consult On This Procedure</a>
+            </div>
+        </article>
+
+        <!-- Case Study 2: Neuromodulators -->
+        <article class="case-study-row">
+            <div class="case-details">
+                <span class="case-procedure-tag">Procedure: Neuromodulator Systems</span>
+                <h3>Glabellar & Periorbital Softening</h3>
+                <p class="case-description">Addressing hyperfunctional expression pathways in the brow and outer eyes. The target objective was to temper aggressive muscular contractions while retaining micro-movements, bypassing a frozen look to optimize tissue longevity and smooth structural lines completely.</p>
+                
+                <div class="clinical-metrics-grid">
+                    <div class="metric-box"><span class="metric-label">Interval</span><span class="metric-value">7 Days Post</span></div>
+                    <div class="metric-box"><span class="metric-label">Clinician</span><span class="metric-value">Dr. Thorne</span></div>
+                    <div class="metric-box"><span class="metric-label">Product Matrix</span><span class="metric-value">Botox Cosmetic</span></div>
+                </div>
+                <a href="booking.html" class="cta-btn">Consult On This Procedure</a>
+            </div>
+            <div class="comparison-viewport">
+                <div class="image-frame">
+                    <img src="/images/gallery/img-003-15082147-w600.jpg" alt="Neuromodulators Before Treatment">
+                    <span class="image-label">Before</span>
+                </div>
+                <div class="image-frame">
+                    <img src="/images/gallery/img-019-15440053-w600.jpg" alt="Neuromodulators After Treatment">
+                    <span class="image-label after-label">After</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Case Study 3: Advanced Orthodontics -->
+        <article class="case-study-row">
+            <div class="comparison-viewport">
+                <div class="image-frame">
+                    <img src="/images/gallery/img-031-15887768-w600.jpg" alt="Orthodontics Before Treatment">
+                    <span class="image-label">Before</span>
+                </div>
+                <div class="image-frame">
+                    <img src="/images/gallery/img-040-16068119-w600.jpg" alt="Orthodontics After Treatment">
+                    <span class="image-label after-label">After</span>
+                </div>
+            </div>
+            <div class="case-details">
+                <span class="case-procedure-tag">Procedure: Smart Clear Orthodontics</span>
+                <h3>Dental Alignment Correction</h3>
+                <p class="case-description">Patient exhibited rotational shifting along the upper anterior teeth along with minor arch crowding. Utilizing digital 3D matrix planning, customized thermoformed clear aligners systematically guided the dental roots into balanced occlusal spacing, optimizing smile mechanics.</p>
+                
+                <div class="clinical-metrics-grid">
+                    <div class="metric-box"><span class="metric-label">Interval</span><span class="metric-value">8 Months Total</span></div>
+                    <div class="metric-box"><span class="metric-label">Clinician</span><span class="metric-value">Dr. Vance</span></div>
+                    <div class="metric-box"><span class="metric-label">Product Matrix</span><span class="metric-value">AuraAligner Kit</span></div>
+                </div>
+                <a href="booking.html" class="cta-btn">Consult On This Procedure</a>
+            </div>
+        </article>
+
+        <!-- Case Study 4: Pigment Regulation -->
+        <article class="case-study-row">
+            <div class="case-details">
+                <span class="case-procedure-tag">Procedure: Pigment Management & Peels</span>
+                <h3>Melasma & UV Melanin Regulation</h3>
+                <p class="case-description">Severe persistent epidermal hyperpigmentation caused by solar damage. Treatment protocols combined a custom chemical peel sequence to accelerate dermal shedding with daily applications of our medical Cysteamine and Vitamin C systems to downregulate deep pathway melanin production.</p>
+                
+                <div class="clinical-metrics-grid">
+                    <div class="metric-box"><span class="metric-label">Interval</span><span class="metric-value">60 Days Post</span></div>
+                    <div class="metric-box"><span class="metric-label">Clinician</span><span class="metric-value">Dr. Thorne</span></div>
+                    <div class="metric-box"><span class="metric-label">Product Matrix</span><span class="metric-value">Active Apothecary</span></div>
+                </div>
+                <a href="booking.html" class="cta-btn">Consult On This Procedure</a>
+            </div>
+            <div class="comparison-viewport">
+                <div class="image-frame">
+                    <img src="/images/gallery/img-004-15122909-w600.jpg" alt="Pigment Before Treatment">
+                    <span class="image-label">Before</span>
+                </div>
+                <div class="image-frame">
+                    <img src="/images/gallery/img-014-15260454-w600.jpg" alt="Pigment After Treatment">
+                    <span class="image-label after-label">After</span>
+                </div>
+            </div>
+        </article>
+
+    </main>
+
+    <!-- Footer Alignment -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3>AURAMED</h3>
+                <p>Setting a premium standard in clinical medspa environments through plant-powered biological treatments and meticulous precision.</p>
+            </div>
+            <div class="footer-column">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="who-we-are.html">Who We Are</a></li>
+                    <li><a href="treatments.html">Treatments</a></li>
+                    <li><a href="shop.html">Shop Products</a></li>
+                    <li><a href="booking.html">Online Booking</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Matrix</h4>
+                <ul>
+                    <li><a href="#">Clinical Blog</a></li>
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="results.html">Our Results</a></li>
+                    <li><a href="#">Terms of Care</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Clinical Integrity</h4>
+                <p style="font-size: 0.85rem; color: rgba(255,255,255,0.5); font-weight: 300;">All photo resources are non-retouched, genuine patient files. Unedited and displayed under identical studio lighting environments for absolute metrics verification.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 AuraMed Spa & Wellness. Architecture by Clean Luxury Design.</p>
+            <p>Privacy Policy &nbsp;&middot;&nbsp; Terms of Service</p>
+        </div>
+    </footer>
+
+</body>
+</html>

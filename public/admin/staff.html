@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Staff</h1>
+          <p>Manages the booking queue — no catalog access</p>
+        </div>
+        <button class="btn" id="addBtn">+ Add Staff Member</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Position</th><th>Date of Birth</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No staff yet — add the first one.</div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2 id="modalTitle">Add Staff Member</h2>
+      <div class="error-banner" id="formError"></div>
+      <form id="form">
+        <input type="hidden" id="staffId">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="name" required>
+        </div>
+        <div class="form-group">
+          <label>Position</label>
+          <input type="text" id="position" required placeholder="e.g. Front Desk, Booking Coordinator">
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" id="dob" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn" id="saveBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN"]);
+    AdminAuth.renderSidebar("staff.html");
+
+    const rowsEl = document.getElementById("rows");
+    const emptyState = document.getElementById("emptyState");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const form = document.getElementById("form");
+    const formError = document.getElementById("formError");
+
+    function openModal(staff) {
+      form.reset();
+      formError.classList.remove("show");
+      document.getElementById("modalTitle").textContent = staff ? "Edit Staff Member" : "Add Staff Member";
+      document.getElementById("staffId").value = staff ? staff.id : "";
+      if (staff) {
+        document.getElementById("name").value = staff.name;
+        document.getElementById("position").value = staff.position;
+        document.getElementById("dob").value = staff.dob.slice(0, 10);
+      }
+      modalOverlay.classList.add("open");
+    }
+    function closeModal() { modalOverlay.classList.remove("open"); }
+
+    document.getElementById("addBtn").addEventListener("click", () => openModal(null));
+    document.getElementById("cancelBtn").addEventListener("click", closeModal);
+
+    async function loadStaff() {
+      const staff = await AdminAuth.authFetch("/api/staff");
+      emptyState.style.display = staff.length ? "none" : "block";
+      rowsEl.innerHTML = staff.map((s) => `
+        <tr>
+          <td>${s.name}</td>
+          <td>${s.position}</td>
+          <td>${s.dob.slice(0, 10)}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-outline btn-small" onclick="editStaff('${s.id}')">Edit</button>
+            <button class="btn btn-danger btn-small" onclick="deleteStaff('${s.id}')">Delete</button>
+          </td>
+        </tr>
+      `).join("");
+      window._staff = staff;
+    }
+
+    window.editStaff = (id) => openModal(window._staff.find((s) => s.id === id));
+
+    window.deleteStaff = async (id) => {
+      if (!confirm("Delete this staff member? This can't be undone.")) return;
+      await AdminAuth.authFetch(`/api/staff/${id}`, { method: "DELETE" });
+      loadStaff();
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      formError.classList.remove("show");
+      const id = document.getElementById("staffId").value;
+      const payload = {
+        name: document.getElementById("name").value,
+        position: document.getElementById("position").value,
+        dob: document.getElementById("dob").value,
+      };
+      try {
+        if (id) {
+          await AdminAuth.authFetch(`/api/staff/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+        } else {
+          await AdminAuth.authFetch("/api/staff", { method: "POST", body: JSON.stringify(payload) });
+        }
+        closeModal();
+        loadStaff();
+      } catch (err) {
+        formError.textContent = err.message;
+        formError.classList.add("show");
+      }
+    });
+
+    loadStaff();
+  </script>
+</body>
+</html>

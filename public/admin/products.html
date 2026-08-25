@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Products</h1>
+          <p>Shown in the Shop as soon as they're added</p>
+        </div>
+        <button class="btn" id="addBtn">+ Add Product</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Category</th><th>Volume</th><th>Price</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No products yet — add the first one.</div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2 id="modalTitle">Add Product</h2>
+      <div class="error-banner" id="formError"></div>
+      <form id="form">
+        <input type="hidden" id="productId">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="name" required placeholder="e.g. Vitamin C Brightening Serum">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" id="category" required placeholder="e.g. Skincare, Supplements">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Weight / Volume</label>
+            <input type="number" id="weightValue" step="0.01" required placeholder="30">
+          </div>
+          <div class="form-group">
+            <label>Unit</label>
+            <select id="weightUnit" required>
+              <option value="" disabled selected>— select —</option>
+              <option value="KG">Kg</option>
+              <option value="LITER">Liter</option>
+              <option value="GRAMS">Grams</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Price (USD)</label>
+          <input type="number" id="priceUsd" step="0.01" required placeholder="45">
+        </div>
+        <div class="form-group">
+          <label>Image URL / path</label>
+          <input type="text" id="imageUrl" placeholder="/images/gallery/img-042-16082485-w500.jpg">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="description" required placeholder="Client-facing product description"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn" id="saveBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN"]);
+    AdminAuth.renderSidebar("products.html");
+
+    const rowsEl = document.getElementById("rows");
+    const emptyState = document.getElementById("emptyState");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const form = document.getElementById("form");
+    const formError = document.getElementById("formError");
+
+    function openModal(product) {
+      form.reset();
+      formError.classList.remove("show");
+      document.getElementById("modalTitle").textContent = product ? "Edit Product" : "Add Product";
+      document.getElementById("productId").value = product ? product.id : "";
+      if (product) {
+        document.getElementById("name").value = product.name;
+        document.getElementById("category").value = product.category;
+        document.getElementById("weightValue").value = product.weightValue;
+        document.getElementById("weightUnit").value = product.weightUnit;
+        document.getElementById("priceUsd").value = product.priceUsd;
+        document.getElementById("description").value = product.description;
+        document.getElementById("imageUrl").value = (() => {
+          try { return JSON.parse(product.images || "[]")[0] || ""; } catch (e) { return ""; }
+        })();
+      }
+      modalOverlay.classList.add("open");
+    }
+    function closeModal() { modalOverlay.classList.remove("open"); }
+
+    document.getElementById("addBtn").addEventListener("click", () => openModal(null));
+    document.getElementById("cancelBtn").addEventListener("click", closeModal);
+
+    async function loadProducts() {
+      const products = await AdminAuth.authFetch("/api/products");
+      emptyState.style.display = products.length ? "none" : "block";
+      rowsEl.innerHTML = products.map((p) => `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.category}</td>
+          <td>${p.weightValue} ${p.weightUnit.toLowerCase()}</td>
+          <td>$${p.priceUsd}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-outline btn-small" onclick="editProduct('${p.id}')">Edit</button>
+            <button class="btn btn-danger btn-small" onclick="deleteProduct('${p.id}')">Delete</button>
+          </td>
+        </tr>
+      `).join("");
+      window._products = products;
+    }
+
+    window.editProduct = (id) => openModal(window._products.find((p) => p.id === id));
+
+    window.deleteProduct = async (id) => {
+      if (!confirm("Delete this product? This can't be undone.")) return;
+      await AdminAuth.authFetch(`/api/products/${id}`, { method: "DELETE" });
+      loadProducts();
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      formError.classList.remove("show");
+      const id = document.getElementById("productId").value;
+      const payload = {
+        name: document.getElementById("name").value,
+        category: document.getElementById("category").value,
+        weightValue: parseFloat(document.getElementById("weightValue").value),
+        weightUnit: document.getElementById("weightUnit").value,
+        priceUsd: parseFloat(document.getElementById("priceUsd").value),
+        description: document.getElementById("description").value,
+        images: (() => {
+          const url = document.getElementById("imageUrl").value.trim();
+          return url ? [url] : [];
+        })(),
+      };
+
+      try {
+        if (id) {
+          await AdminAuth.authFetch(`/api/products/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+        } else {
+          await AdminAuth.authFetch("/api/products", { method: "POST", body: JSON.stringify(payload) });
+        }
+        closeModal();
+        loadProducts();
+      } catch (err) {
+        formError.textContent = err.message;
+        formError.classList.add("show");
+      }
+    });
+
+    loadProducts();
+  </script>
+</body>
+</html>

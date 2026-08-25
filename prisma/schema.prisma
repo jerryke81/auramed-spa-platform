@@ -1,0 +1,202 @@
+// Prisma schema — Spa Platform
+// Local dev: SQLite (zero setup). Swap provider to "mysql" + a real DATABASE_URL
+// when you're ready to deploy the backend (see README "Moving to MySQL").
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// NOTE: SQLite (local dev) does not support enums in Prisma — `migrate dev`
+// fails validation outright. The fields below are therefore typed `String`,
+// with the allowed values documented inline. The app already passes these as
+// plain string literals ("SUPER_ADMIN", "PENDING", ...), so the values are
+// identical either way; only DB-level enforcement differs.
+//
+// When switching the datasource to MySQL for production (see README "Moving to
+// MySQL"), uncomment the enum blocks below and change the corresponding field
+// types back from `String` to the enum name to regain DB-level validation.
+//
+// enum Category       { FACE SKIN BODY WELLNESS }
+// enum DurationUnit   { MINUTES HOURS DAYS }
+// enum WeightUnit     { KG LITER GRAMS }
+// enum BookingStatus  { PENDING CONFIRMED DECLINED CANCELLED }
+// enum PaymentOption  { PAY_NOW PAY_LATER }
+// enum PaymentStatus  { PENDING PAID }
+// enum MembershipTier { SILVER GOLD PLATINUM VIP NOT_SURE }
+// enum AdminRole      { SUPER_ADMIN STAFF }
+
+model Treatment {
+  id                  String   @id @default(cuid())
+  name                String
+  images              String   // JSON array of image paths
+  category             String   // FACE | SKIN | BODY | WELLNESS
+  durationValue        Int
+  durationUnit         String   // MINUTES | HOURS | DAYS
+  description          String
+  costUsd              Float
+  historyOfProcedure   String?
+  patientRequirements  String?
+  isPublished          Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  specialists   TreatmentSpecialist[]
+  bulletinItems TreatmentBulletinItem[]
+  bookings      Booking[]
+}
+
+model Specialist {
+  id                 String   @id @default(cuid())
+  name               String
+  photoUrl           String   // required per client
+  academicBackground String
+  workExperience     String
+  createdAt          DateTime @default(now())
+
+  treatments TreatmentSpecialist[]
+  bookings   Booking[]
+}
+
+model TreatmentSpecialist {
+  treatmentId  String
+  specialistId String
+  treatment    Treatment  @relation(fields: [treatmentId], references: [id])
+  specialist   Specialist @relation(fields: [specialistId], references: [id])
+
+  @@id([treatmentId, specialistId])
+}
+
+model TreatmentBulletinItem {
+  id          String   @id @default(cuid())
+  treatmentId String
+  item        String
+  procedure   String
+  order       Int      @default(0)
+  treatment   Treatment @relation(fields: [treatmentId], references: [id])
+}
+
+model Product {
+  id          String     @id @default(cuid())
+  name        String
+  images      String     // JSON array of image paths
+  category    String
+  weightValue Float
+  weightUnit  String     // KG | LITER | GRAMS
+  description String
+  priceUsd    Float
+  createdAt   DateTime   @default(now())
+
+  orderItems OrderItem[]
+}
+
+model Staff {
+  id        String   @id @default(cuid())
+  name      String
+  position  String
+  dob       DateTime
+  createdAt DateTime @default(now())
+}
+
+model Member {
+  id                            String   @id @default(cuid())
+  firstName                     String
+  middleName                    String?
+  lastName                      String
+  gender                        String
+  dob                           DateTime
+  nationality                   String
+  profilePhotoUrl               String?
+  mobile                        String
+  email                         String   @unique
+  physicalAddress               String
+  passwordHash                  String
+  healthConditions              String   // JSON array
+  interestedServices            String   // JSON array
+  emergencyContactName          String
+  emergencyContactRelationship  String
+  emergencyContactPhone         String
+  membershipTier                String   // SILVER | GOLD | PLATINUM | VIP | NOT_SURE
+  marketingOptIn                Boolean
+  agreedToTerms                 Boolean
+  createdAt                     DateTime @default(now())
+
+  bookings Booking[]
+  orders   Order[]
+}
+
+// Booking = request-and-confirm model (see spec §4.9)
+// Client requests a treatment + preferred date/time -> pending queue ->
+// staff assigns a specialist and confirms/declines -> staff picks pay-now
+// vs pay-later -> client notified on the channel they used to request.
+model Booking {
+  id                  String         @id @default(cuid())
+  memberId            String?
+  guestName           String?
+  guestEmail          String?
+  guestPhone          String?
+  treatmentId         String
+  specialistId        String?        // null until staff assigns
+  requestedDatetime    DateTime
+  status              String         @default("PENDING") // PENDING | CONFIRMED | DECLINED | CANCELLED
+  paymentOption        String?       // PAY_NOW | PAY_LATER
+  notificationChannel  String         // "email" | "sms" | "whatsapp" | "app"
+  notes               String?        // client-submitted concerns/allergies/goals from the appointment form
+  createdAt           DateTime       @default(now())
+  confirmedAt         DateTime?
+
+  member     Member?     @relation(fields: [memberId], references: [id])
+  treatment  Treatment   @relation(fields: [treatmentId], references: [id])
+  specialist Specialist? @relation(fields: [specialistId], references: [id])
+  payment    Payment?
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  cartToken String?     // persistent guest cart token (cookie-based)
+  memberId  String?
+  status    String      @default("pending")
+  createdAt DateTime    @default(now())
+
+  member  Member?     @relation(fields: [memberId], references: [id])
+  items   OrderItem[]
+  payment Payment?
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  bookingId   String?       @unique
+  orderId     String?       @unique
+  amountUsd   Float
+  status      String        @default("PENDING") // PENDING | PAID
+  provider    String        @default("paypal")
+  providerRef String?
+  createdAt   DateTime      @default(now())
+
+  booking Booking? @relation(fields: [bookingId], references: [id])
+  order   Order?   @relation(fields: [orderId], references: [id])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         String    // SUPER_ADMIN | STAFF
+  staffId      String?   // links to Staff record if role = STAFF
+  createdAt    DateTime  @default(now())
+}

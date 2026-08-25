@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payments | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Payments</h1>
+          <p>PayPal only — status across bookings and orders</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Type</th><th>Related To</th><th>Amount</th><th>Status</th><th>Provider</th><th>Date</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No payments recorded yet.</div>
+    </main>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN"]);
+    AdminAuth.renderSidebar("payments.html");
+
+    async function loadPayments() {
+      const payments = await AdminAuth.authFetch("/api/payments");
+      document.getElementById("emptyState").style.display = payments.length ? "none" : "block";
+      document.getElementById("rows").innerHTML = payments.map((p) => `
+        <tr>
+          <td>${p.bookingId ? "Booking" : "Order"}</td>
+          <td>${p.bookingId || p.orderId || "—"}</td>
+          <td>$${p.amountUsd}</td>
+          <td><span class="badge badge-${p.status.toLowerCase()}">${p.status}</span></td>
+          <td>${p.provider}</td>
+          <td>${new Date(p.createdAt).toLocaleDateString()}</td>
+        </tr>
+      `).join("");
+    }
+    loadPayments();
+  </script>
+</body>
+</html>

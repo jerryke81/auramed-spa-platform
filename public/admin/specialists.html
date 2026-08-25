@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Specialists | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Specialists</h1>
+          <p>Appear on the public Specialists page once added</p>
+        </div>
+        <button class="btn" id="addBtn">+ Add Specialist</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Photo</th><th>Name</th><th>Specializes In</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No specialists yet — add the first one.</div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2 id="modalTitle">Add Specialist</h2>
+      <div class="error-banner" id="formError"></div>
+      <form id="form">
+        <input type="hidden" id="specialistId">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="name" required placeholder="e.g. Dr. Evelyn Thorne">
+        </div>
+        <div class="form-group">
+          <label>Photo URL / path <span style="color:var(--text-muted)">(required)</span></label>
+          <input type="text" id="photoUrl" required placeholder="/images/team/evelyn-thorne.png">
+        </div>
+        <div class="form-group">
+          <label>Academic Background</label>
+          <textarea id="academicBackground" required placeholder="e.g. MD, Johns Hopkins; Board Certified Dermatology"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Work Experience</label>
+          <textarea id="workExperience" required placeholder="e.g. 12 years clinical aesthetics, former Chief of..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Specializes In (treatments)</label>
+          <div id="treatmentCheckboxes" style="border:1px solid var(--border); border-radius:6px; padding:0.75rem; max-height:140px; overflow-y:auto;"></div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn" id="saveBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN"]);
+    AdminAuth.renderSidebar("specialists.html");
+
+    const rowsEl = document.getElementById("rows");
+    const emptyState = document.getElementById("emptyState");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const form = document.getElementById("form");
+    const formError = document.getElementById("formError");
+    let treatments = [];
+
+    function openModal(specialist) {
+      form.reset();
+      formError.classList.remove("show");
+      document.getElementById("modalTitle").textContent = specialist ? "Edit Specialist" : "Add Specialist";
+      document.getElementById("specialistId").value = specialist ? specialist.id : "";
+
+      if (specialist) {
+        document.getElementById("name").value = specialist.name;
+        document.getElementById("photoUrl").value = specialist.photoUrl;
+        document.getElementById("academicBackground").value = specialist.academicBackground;
+        document.getElementById("workExperience").value = specialist.workExperience;
+      }
+
+      const selectedIds = specialist ? specialist.treatments.map((t) => t.treatmentId) : [];
+      document.getElementById("treatmentCheckboxes").innerHTML = treatments.length
+        ? treatments.map((t) => `
+            <label style="display:flex; align-items:center; gap:0.5rem; padding:0.25rem 0; font-size:0.85rem;">
+              <input type="checkbox" value="${t.id}" ${selectedIds.includes(t.id) ? "checked" : ""} style="width:auto;">
+              ${t.name}
+            </label>`).join("")
+        : "<p style='color:var(--text-muted); font-size:0.85rem;'>No treatments yet — add one first on the Treatments page.</p>";
+
+      modalOverlay.classList.add("open");
+    }
+    function closeModal() { modalOverlay.classList.remove("open"); }
+
+    document.getElementById("addBtn").addEventListener("click", () => openModal(null));
+    document.getElementById("cancelBtn").addEventListener("click", closeModal);
+
+    async function loadTreatments() {
+      treatments = await AdminAuth.authFetch("/api/treatments/admin/all");
+    }
+
+    async function loadSpecialists() {
+      const specialists = await AdminAuth.authFetch("/api/specialists");
+      emptyState.style.display = specialists.length ? "none" : "block";
+      rowsEl.innerHTML = specialists.map((s) => `
+        <tr>
+          <td><img src="${s.photoUrl}" alt="${s.name}" style="width:44px; height:44px; border-radius:50%; object-fit:cover;" onerror="this.style.opacity=0.2"></td>
+          <td>${s.name}</td>
+          <td>${s.treatments.map((t) => t.treatment.name).join(", ") || "—"}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-outline btn-small" onclick="editSpecialist('${s.id}')">Edit</button>
+            <button class="btn btn-danger btn-small" onclick="deleteSpecialist('${s.id}')">Delete</button>
+          </td>
+        </tr>
+      `).join("");
+      window._specialists = specialists;
+    }
+
+    window.editSpecialist = (id) => openModal(window._specialists.find((s) => s.id === id));
+
+    window.deleteSpecialist = async (id) => {
+      if (!confirm("Delete this specialist? This can't be undone.")) return;
+      await AdminAuth.authFetch(`/api/specialists/${id}`, { method: "DELETE" });
+      loadSpecialists();
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      formError.classList.remove("show");
+      const id = document.getElementById("specialistId").value;
+      const treatmentIds = Array.from(document.querySelectorAll("#treatmentCheckboxes input:checked")).map((el) => el.value);
+
+      const payload = {
+        name: document.getElementById("name").value,
+        photoUrl: document.getElementById("photoUrl").value,
+        academicBackground: document.getElementById("academicBackground").value,
+        workExperience: document.getElementById("workExperience").value,
+        treatmentIds,
+      };
+
+      try {
+        if (id) {
+          await AdminAuth.authFetch(`/api/specialists/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+        } else {
+          await AdminAuth.authFetch("/api/specialists", { method: "POST", body: JSON.stringify(payload) });
+        }
+        closeModal();
+        loadSpecialists();
+      } catch (err) {
+        formError.textContent = err.message;
+        formError.classList.add("show");
+      }
+    });
+
+    (async () => {
+      await loadTreatments();
+      await loadSpecialists();
+    })();
+  </script>
+</body>
+</html>
