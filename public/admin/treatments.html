@@ -23,7 +23,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Name</th><th>Category</th><th>Duration</th><th>Cost</th><th>Status</th><th>Specialists</th><th></th></tr>
+            <tr><th></th><th>Name</th><th>Category</th><th>Duration</th><th>Cost</th><th>Status</th><th>Specialists</th><th></th></tr>
           </thead>
           <tbody id="rows"></tbody>
         </table>
@@ -39,6 +39,15 @@
       <div class="error-banner" id="formError"></div>
       <form id="form">
         <input type="hidden" id="treatmentId">
+        <input type="hidden" id="imageUrl">
+        <div class="form-group">
+          <label>Photo</label>
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <img id="imagePreview" src="" alt="" style="width:64px; height:64px; border-radius:8px; object-fit:cover; background:var(--bg-sand); display:none;">
+            <input type="file" id="imageFile" accept="image/jpeg,image/png,image/webp">
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">JPEG, PNG, or WebP, up to 5MB.</p>
+        </div>
         <div class="form-group">
           <label>Name</label>
           <input type="text" id="name" required placeholder="e.g. Hormone & Thyroid Support">
@@ -71,10 +80,6 @@
               <option value="DAYS">Days</option>
             </select>
           </div>
-        </div>
-        <div class="form-group">
-          <label>Image URL / path</label>
-          <input type="text" id="imageUrl" placeholder="/images/gallery/img-001-14885905-w600.jpg">
         </div>
         <div class="form-group">
           <label>Description</label>
@@ -113,14 +118,26 @@
     const modalOverlay = document.getElementById("modalOverlay");
     const form = document.getElementById("form");
     const formError = document.getElementById("formError");
+    const imageFileInput = document.getElementById("imageFile");
+    const imagePreview = document.getElementById("imagePreview");
     let specialists = [];
+
+    // Show a local preview immediately on file selection, before upload happens.
+    imageFileInput.addEventListener("change", () => {
+      const file = imageFileInput.files[0];
+      if (!file) return;
+      imagePreview.src = URL.createObjectURL(file);
+      imagePreview.style.display = "block";
+    });
 
     function openModal(treatment) {
       form.reset();
       formError.classList.remove("show");
+      imageFileInput.value = "";
       document.getElementById("modalTitle").textContent = treatment ? "Edit Treatment" : "Add Treatment";
       document.getElementById("treatmentId").value = treatment ? treatment.id : "";
 
+      let existingImage = "";
       if (treatment) {
         document.getElementById("name").value = treatment.name;
         document.getElementById("category").value = treatment.category;
@@ -128,12 +145,17 @@
         document.getElementById("durationValue").value = treatment.durationValue;
         document.getElementById("durationUnit").value = treatment.durationUnit;
         document.getElementById("description").value = treatment.description;
-        document.getElementById("imageUrl").value = (() => {
-          try { return JSON.parse(treatment.images || "[]")[0] || ""; } catch (e) { return ""; }
-        })();
         document.getElementById("historyOfProcedure").value = treatment.historyOfProcedure || "";
         document.getElementById("patientRequirements").value = treatment.patientRequirements || "";
         document.getElementById("isPublished").checked = treatment.isPublished;
+        try { existingImage = JSON.parse(treatment.images || "[]")[0] || ""; } catch (e) {}
+      }
+      document.getElementById("imageUrl").value = existingImage;
+      if (existingImage) {
+        imagePreview.src = existingImage;
+        imagePreview.style.display = "block";
+      } else {
+        imagePreview.style.display = "none";
       }
 
       const selectedIds = treatment ? treatment.specialists.map((s) => s.specialistId) : [];
@@ -156,11 +178,18 @@
       specialists = await AdminAuth.authFetch("/api/specialists");
     }
 
+    function firstImage(images) {
+      try { return JSON.parse(images || "[]")[0] || null; } catch (e) { return null; }
+    }
+
     async function loadTreatments() {
       const treatments = await AdminAuth.authFetch("/api/treatments/admin/all");
       emptyState.style.display = treatments.length ? "none" : "block";
-      rowsEl.innerHTML = treatments.map((t) => `
+      rowsEl.innerHTML = treatments.map((t) => {
+        const img = firstImage(t.images);
+        return `
         <tr>
+          <td>${img ? `<img src="${img}" alt="" style="width:40px; height:40px; border-radius:6px; object-fit:cover;">` : "—"}</td>
           <td>${t.name}</td>
           <td>${t.category}</td>
           <td>${t.durationValue} ${t.durationUnit.toLowerCase()}</td>
@@ -173,7 +202,7 @@
             <button class="btn btn-danger btn-small" onclick="deleteTreatment('${t.id}')">Delete</button>
           </td>
         </tr>
-      `).join("");
+      `; }).join("");
       window._treatments = treatments;
     }
 
@@ -199,24 +228,33 @@
 
       const id = document.getElementById("treatmentId").value;
       const specialistIds = Array.from(document.querySelectorAll("#specialistCheckboxes input:checked")).map((el) => el.value);
-
-      const payload = {
-        name: document.getElementById("name").value,
-        category: document.getElementById("category").value,
-        costUsd: parseFloat(document.getElementById("costUsd").value),
-        durationValue: parseInt(document.getElementById("durationValue").value, 10),
-        durationUnit: document.getElementById("durationUnit").value,
-        description: document.getElementById("description").value,
-        historyOfProcedure: document.getElementById("historyOfProcedure").value,
-        patientRequirements: document.getElementById("patientRequirements").value,
-        images: (() => {
-          const url = document.getElementById("imageUrl").value.trim();
-          return url ? [url] : [];
-        })(),
-        specialistIds,
-      };
+      const saveBtn = document.getElementById("saveBtn");
+      saveBtn.disabled = true;
 
       try {
+        // Upload the new image first, if one was selected — otherwise keep
+        // whatever was already there (or leave empty for a new treatment).
+        let imageUrl = document.getElementById("imageUrl").value;
+        const selectedFile = imageFileInput.files[0];
+        if (selectedFile) {
+          saveBtn.textContent = "Uploading image...";
+          imageUrl = await AdminAuth.uploadImage(selectedFile);
+        }
+
+        const payload = {
+          name: document.getElementById("name").value,
+          category: document.getElementById("category").value,
+          costUsd: parseFloat(document.getElementById("costUsd").value),
+          durationValue: parseInt(document.getElementById("durationValue").value, 10),
+          durationUnit: document.getElementById("durationUnit").value,
+          description: document.getElementById("description").value,
+          historyOfProcedure: document.getElementById("historyOfProcedure").value,
+          patientRequirements: document.getElementById("patientRequirements").value,
+          images: imageUrl ? [imageUrl] : [],
+          specialistIds,
+        };
+
+        saveBtn.textContent = "Save";
         if (id) {
           payload.isPublished = document.getElementById("isPublished").checked;
           await AdminAuth.authFetch(`/api/treatments/${id}`, { method: "PUT", body: JSON.stringify(payload) });
@@ -228,6 +266,9 @@
       } catch (err) {
         formError.textContent = err.message;
         formError.classList.add("show");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save";
       }
     });
 

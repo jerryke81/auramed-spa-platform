@@ -1,7 +1,7 @@
 /**
  * Shared across every /admin page. Handles the JWT from POST /api/admin/login,
- * guards pages that require auth, and wraps fetch() to attach the token and
- * handle expiry/401s consistently.
+ * guards pages that require auth, wraps fetch() to attach the token and
+ * handle expiry/401s consistently, and now handles image uploads.
  */
 const AdminAuth = (function () {
   const TOKEN_KEY = "adminToken";
@@ -26,8 +26,6 @@ const AdminAuth = (function () {
     window.location.href = "/admin/login.html";
   }
 
-  // Call at the top of every protected page. Redirects to login if no token.
-  // If roles is given (e.g. ["SUPER_ADMIN"]), also redirects if role doesn't match.
   function requireAuth(roles) {
     const token = getToken();
     const role = getRole();
@@ -43,8 +41,6 @@ const AdminAuth = (function () {
     return true;
   }
 
-  // Wraps fetch() — attaches Authorization header, parses JSON, and redirects
-  // to login on 401 (expired/invalid token) instead of failing silently.
   async function authFetch(path, options = {}) {
     const headers = Object.assign({}, options.headers, {
       Authorization: "Bearer " + getToken(),
@@ -66,8 +62,16 @@ const AdminAuth = (function () {
     return data;
   }
 
-  // Renders the sidebar nav into #adminSidebar, filtering links by role and
-  // marking the current page active. Call after requireAuth() on every page.
+  // Uploads a single image file and returns its public URL (e.g. "/uploads/xyz.jpg").
+  // Pass the File object from an <input type="file"> element.
+  async function uploadImage(file) {
+    if (!file) throw new Error("No file selected");
+    const formData = new FormData();
+    formData.append("image", file);
+    const result = await authFetch("/api/uploads", { method: "POST", body: formData });
+    return result.url;
+  }
+
   function renderSidebar(activePage) {
     const role = getRole();
     const container = document.getElementById("adminSidebar");
@@ -101,5 +105,5 @@ const AdminAuth = (function () {
     document.getElementById("logoutBtn").addEventListener("click", logout);
   }
 
-  return { getToken, getRole, setSession, clearSession, logout, requireAuth, authFetch, renderSidebar };
+  return { getToken, getRole, setSession, clearSession, logout, requireAuth, authFetch, uploadImage, renderSidebar };
 })();

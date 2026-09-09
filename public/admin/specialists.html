@@ -36,13 +36,18 @@
       <div class="error-banner" id="formError"></div>
       <form id="form">
         <input type="hidden" id="specialistId">
+        <input type="hidden" id="photoUrl">
+        <div class="form-group">
+          <label>Photo <span style="color:var(--danger)">(required)</span></label>
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <img id="imagePreview" src="" alt="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background:var(--bg-sand); display:none;">
+            <input type="file" id="imageFile" accept="image/jpeg,image/png,image/webp">
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">JPEG, PNG, or WebP, up to 5MB.</p>
+        </div>
         <div class="form-group">
           <label>Name</label>
           <input type="text" id="name" required placeholder="e.g. Dr. Evelyn Thorne">
-        </div>
-        <div class="form-group">
-          <label>Photo URL / path <span style="color:var(--text-muted)">(required)</span></label>
-          <input type="text" id="photoUrl" required placeholder="/images/team/evelyn-thorne.png">
         </div>
         <div class="form-group">
           <label>Academic Background</label>
@@ -74,17 +79,35 @@
     const modalOverlay = document.getElementById("modalOverlay");
     const form = document.getElementById("form");
     const formError = document.getElementById("formError");
+    const imageFileInput = document.getElementById("imageFile");
+    const imagePreview = document.getElementById("imagePreview");
     let treatments = [];
+
+    imageFileInput.addEventListener("change", () => {
+      const file = imageFileInput.files[0];
+      if (!file) return;
+      imagePreview.src = URL.createObjectURL(file);
+      imagePreview.style.display = "block";
+    });
 
     function openModal(specialist) {
       form.reset();
       formError.classList.remove("show");
+      imageFileInput.value = "";
       document.getElementById("modalTitle").textContent = specialist ? "Edit Specialist" : "Add Specialist";
       document.getElementById("specialistId").value = specialist ? specialist.id : "";
 
+      const existingPhoto = specialist ? specialist.photoUrl : "";
+      document.getElementById("photoUrl").value = existingPhoto || "";
+      if (existingPhoto) {
+        imagePreview.src = existingPhoto;
+        imagePreview.style.display = "block";
+      } else {
+        imagePreview.style.display = "none";
+      }
+
       if (specialist) {
         document.getElementById("name").value = specialist.name;
-        document.getElementById("photoUrl").value = specialist.photoUrl;
         document.getElementById("academicBackground").value = specialist.academicBackground;
         document.getElementById("workExperience").value = specialist.workExperience;
       }
@@ -139,16 +162,29 @@
       formError.classList.remove("show");
       const id = document.getElementById("specialistId").value;
       const treatmentIds = Array.from(document.querySelectorAll("#treatmentCheckboxes input:checked")).map((el) => el.value);
-
-      const payload = {
-        name: document.getElementById("name").value,
-        photoUrl: document.getElementById("photoUrl").value,
-        academicBackground: document.getElementById("academicBackground").value,
-        workExperience: document.getElementById("workExperience").value,
-        treatmentIds,
-      };
+      const saveBtn = document.getElementById("saveBtn");
+      saveBtn.disabled = true;
 
       try {
+        let photoUrl = document.getElementById("photoUrl").value;
+        const selectedFile = imageFileInput.files[0];
+        if (selectedFile) {
+          saveBtn.textContent = "Uploading photo...";
+          photoUrl = await AdminAuth.uploadImage(selectedFile);
+        }
+        if (!photoUrl) {
+          throw new Error("A photo is required.");
+        }
+
+        const payload = {
+          name: document.getElementById("name").value,
+          photoUrl,
+          academicBackground: document.getElementById("academicBackground").value,
+          workExperience: document.getElementById("workExperience").value,
+          treatmentIds,
+        };
+
+        saveBtn.textContent = "Save";
         if (id) {
           await AdminAuth.authFetch(`/api/specialists/${id}`, { method: "PUT", body: JSON.stringify(payload) });
         } else {
@@ -159,6 +195,9 @@
       } catch (err) {
         formError.textContent = err.message;
         formError.classList.add("show");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save";
       }
     });
 

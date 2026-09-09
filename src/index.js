@@ -1,9 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-// Patches Express 4's router so an async handler that rejects is passed to the
-// error handler below instead of becoming an unhandled rejection that exits the
-// process. Must be required before the route files are loaded (they're required
-// further down), so the patch is in place when their routers are created.
 require("express-async-errors");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -26,6 +22,7 @@ app.use("/api/members", require("./routes/members"));
 app.use("/api/staff", require("./routes/staff"));
 app.use("/api/payments", require("./routes/payments"));
 app.use("/api/admin", require("./routes/admin"));
+app.use("/api/uploads", require("./routes/uploads"));
 
 // Basic error handler
 app.use((err, req, res, next) => {

@@ -22,7 +22,7 @@
 
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Category</th><th>Volume</th><th>Price</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Name</th><th>Category</th><th>Volume</th><th>Price</th><th></th></tr></thead>
           <tbody id="rows"></tbody>
         </table>
       </div>
@@ -36,6 +36,15 @@
       <div class="error-banner" id="formError"></div>
       <form id="form">
         <input type="hidden" id="productId">
+        <input type="hidden" id="imageUrl">
+        <div class="form-group">
+          <label>Photo</label>
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <img id="imagePreview" src="" alt="" style="width:64px; height:64px; border-radius:8px; object-fit:cover; background:var(--bg-sand); display:none;">
+            <input type="file" id="imageFile" accept="image/jpeg,image/png,image/webp">
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">JPEG, PNG, or WebP, up to 5MB.</p>
+        </div>
         <div class="form-group">
           <label>Name</label>
           <input type="text" id="name" required placeholder="e.g. Vitamin C Brightening Serum">
@@ -64,10 +73,6 @@
           <input type="number" id="priceUsd" step="0.01" required placeholder="45">
         </div>
         <div class="form-group">
-          <label>Image URL / path</label>
-          <input type="text" id="imageUrl" placeholder="/images/gallery/img-042-16082485-w500.jpg">
-        </div>
-        <div class="form-group">
           <label>Description</label>
           <textarea id="description" required placeholder="Client-facing product description"></textarea>
         </div>
@@ -89,12 +94,28 @@
     const modalOverlay = document.getElementById("modalOverlay");
     const form = document.getElementById("form");
     const formError = document.getElementById("formError");
+    const imageFileInput = document.getElementById("imageFile");
+    const imagePreview = document.getElementById("imagePreview");
+
+    imageFileInput.addEventListener("change", () => {
+      const file = imageFileInput.files[0];
+      if (!file) return;
+      imagePreview.src = URL.createObjectURL(file);
+      imagePreview.style.display = "block";
+    });
+
+    function firstImage(images) {
+      try { return JSON.parse(images || "[]")[0] || null; } catch (e) { return null; }
+    }
 
     function openModal(product) {
       form.reset();
       formError.classList.remove("show");
+      imageFileInput.value = "";
       document.getElementById("modalTitle").textContent = product ? "Edit Product" : "Add Product";
       document.getElementById("productId").value = product ? product.id : "";
+
+      let existingImage = "";
       if (product) {
         document.getElementById("name").value = product.name;
         document.getElementById("category").value = product.category;
@@ -102,10 +123,16 @@
         document.getElementById("weightUnit").value = product.weightUnit;
         document.getElementById("priceUsd").value = product.priceUsd;
         document.getElementById("description").value = product.description;
-        document.getElementById("imageUrl").value = (() => {
-          try { return JSON.parse(product.images || "[]")[0] || ""; } catch (e) { return ""; }
-        })();
+        existingImage = firstImage(product.images) || "";
       }
+      document.getElementById("imageUrl").value = existingImage;
+      if (existingImage) {
+        imagePreview.src = existingImage;
+        imagePreview.style.display = "block";
+      } else {
+        imagePreview.style.display = "none";
+      }
+
       modalOverlay.classList.add("open");
     }
     function closeModal() { modalOverlay.classList.remove("open"); }
@@ -116,8 +143,11 @@
     async function loadProducts() {
       const products = await AdminAuth.authFetch("/api/products");
       emptyState.style.display = products.length ? "none" : "block";
-      rowsEl.innerHTML = products.map((p) => `
+      rowsEl.innerHTML = products.map((p) => {
+        const img = firstImage(p.images);
+        return `
         <tr>
+          <td>${img ? `<img src="${img}" alt="" style="width:40px; height:40px; border-radius:6px; object-fit:cover;">` : "—"}</td>
           <td>${p.name}</td>
           <td>${p.category}</td>
           <td>${p.weightValue} ${p.weightUnit.toLowerCase()}</td>
@@ -127,7 +157,7 @@
             <button class="btn btn-danger btn-small" onclick="deleteProduct('${p.id}')">Delete</button>
           </td>
         </tr>
-      `).join("");
+      `; }).join("");
       window._products = products;
     }
 
@@ -143,20 +173,28 @@
       e.preventDefault();
       formError.classList.remove("show");
       const id = document.getElementById("productId").value;
-      const payload = {
-        name: document.getElementById("name").value,
-        category: document.getElementById("category").value,
-        weightValue: parseFloat(document.getElementById("weightValue").value),
-        weightUnit: document.getElementById("weightUnit").value,
-        priceUsd: parseFloat(document.getElementById("priceUsd").value),
-        description: document.getElementById("description").value,
-        images: (() => {
-          const url = document.getElementById("imageUrl").value.trim();
-          return url ? [url] : [];
-        })(),
-      };
+      const saveBtn = document.getElementById("saveBtn");
+      saveBtn.disabled = true;
 
       try {
+        let imageUrl = document.getElementById("imageUrl").value;
+        const selectedFile = imageFileInput.files[0];
+        if (selectedFile) {
+          saveBtn.textContent = "Uploading image...";
+          imageUrl = await AdminAuth.uploadImage(selectedFile);
+        }
+
+        const payload = {
+          name: document.getElementById("name").value,
+          category: document.getElementById("category").value,
+          weightValue: parseFloat(document.getElementById("weightValue").value),
+          weightUnit: document.getElementById("weightUnit").value,
+          priceUsd: parseFloat(document.getElementById("priceUsd").value),
+          description: document.getElementById("description").value,
+          images: imageUrl ? [imageUrl] : [],
+        };
+
+        saveBtn.textContent = "Save";
         if (id) {
           await AdminAuth.authFetch(`/api/products/${id}`, { method: "PUT", body: JSON.stringify(payload) });
         } else {
@@ -167,6 +205,9 @@
       } catch (err) {
         formError.textContent = err.message;
         formError.classList.add("show");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save";
       }
     });
 

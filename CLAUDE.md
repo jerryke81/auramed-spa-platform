@@ -10,9 +10,13 @@ Read that file before making architectural changes.
 ## Stack
 - **Backend:** Node.js + Express + Prisma ORM
 - **Local DB:** SQLite (`prisma/dev.db`, gitignored) — zero setup, no DB server needed
-- **Production DB:** MySQL on **Hostinger Business** (confirmed — hosts both the
-  Node.js app via hPanel's Node.js App Manager and the MySQL database on the
-  same account). See "Moving to MySQL" in README for the migration steps.
+- **Production:** Hostinger **VPS** at `168.231.76.58`, app deployed to
+  `/var/www/auramed-spa-platform` and kept alive via **PM2** as process
+  `auramed` (`pm2 restart auramed` after a `git pull`). MySQL runs locally on
+  the same VPS. This supersedes the earlier Hostinger Business/hPanel Node.js
+  App Manager plan referenced in README's "Moving to MySQL" section — that
+  section is now stale (no hPanel, no auto-managed restarts; PM2 does that
+  here) and should be rewritten next time someone touches deploy docs.
 - **Auth:** JWT (`jsonwebtoken`) + bcrypt password hashing
 - **Payments:** PayPal only (client decision — do not add Stripe)
 - **Frontend:** merged into this repo under `public/` — 9 static HTML pages
@@ -135,9 +139,19 @@ no framework. Served by Express alongside everything else in `public/`.
   enforcement — see the `VALID_CATEGORIES`/`VALID_WEIGHT_UNITS` constants at
   the top of `treatments.js`/`products.js`. Keep these in sync with the
   commented-out enum blocks in `schema.prisma`.
-- Not yet built: image upload (specialists/products currently take a photo
-  URL/path as plain text, no file picker), and PayPal is still a stub — the
-  Payments page just displays whatever's in the `Payment` table.
+- **Image upload is now built.** `POST /api/uploads` (`src/routes/uploads.js`,
+  SUPER_ADMIN-only) takes a single `multipart/form-data` file under field
+  `image` (JPEG/PNG/WebP, 5MB max via `multer`), saves it to `/uploads` under
+  a generated unguessable filename, and returns `{ url }`. The Treatments,
+  Products, and Specialists admin forms now use a real file-picker
+  (`AdminAuth.uploadImage()` in `admin.js`) that uploads on save and stores
+  the returned URL — this replaces the old plain-text "Image URL / path"
+  input. Note: the upload's file extension comes from the client-supplied
+  filename, not the validated MIME type, so it can diverge from the declared
+  type — low risk since the endpoint is SUPER_ADMIN-only, but worth tightening
+  (map MIME type → extension) if this is ever opened up to more roles.
+  PayPal is still a stub — the Payments page just displays whatever's in the
+  `Payment` table.
 ## Frontend ↔ API wiring status
 - **Wired to the API:** `treatments.html`, `shop.html`, `team.html` — these
   three list pages now fetch from `GET /api/treatments`, `/api/products`,
@@ -159,10 +173,9 @@ no framework. Served by Express alongside everything else in `public/`.
   short job title (e.g. "Chief Executive Officer" — using `workExperience`
   as the closest substitute for now). Add schema fields for these if the
   client wants them back rather than re-inventing them ad hoc per page.
-- Admin forms for Treatments and Products now have a plain-text "Image URL /
-  path" field (matching how Specialists already handles `photoUrl`) — without
-  it, anything created via the admin had no image at all. Still no real file
-  upload (`multer` isn't wired up); this is a path/URL text input only.
+- Admin forms for Treatments and Products (and Specialists' `photoUrl`) now
+  upload a real image file via `POST /api/uploads` instead of taking a
+  plain-text path/URL — see "Image upload is now built" above.
 - Shop's "Add to Cart" calls the existing persistent-guest-cart endpoint
   (`POST /api/products/cart/add`) and confirms via `alert()` — no cart
   page/counter UI yet, that's a separate piece of work.

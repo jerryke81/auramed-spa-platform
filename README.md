@@ -92,11 +92,16 @@ npx prisma studio
 Opens a browser GUI at `http://localhost:5555` to view/edit rows directly —
 useful for checking seeded data or debugging without writing queries.
 
-## Moving to MySQL (production — confirmed: Hostinger Business)
+## Moving to MySQL (production — confirmed: Hostinger VPS)
 
-Hostinger Business supports running Node.js apps directly via hPanel's Node.js
-App Manager, plus MySQL databases — so this backend deploys to the same
-account, no separate host needed.
+> **Superseded:** this section originally described deploying via Hostinger
+> Business's hPanel Node.js App Manager. Production has since moved to a
+> **Hostinger VPS** (`168.231.76.58`) instead — the app lives at
+> `/var/www/auramed-spa-platform` and is kept running with **PM2** as the
+> process named `auramed`, not hPanel's managed Node.js runner. MySQL runs
+> locally on that same VPS rather than through hPanel's MySQL Databases panel.
+> Steps below are updated accordingly; step 1 (schema/enum notes) still applies
+> as-is.
 
 1. In `prisma/schema.prisma`, change:
    ```prisma
@@ -111,20 +116,23 @@ account, no separate host needed.
    MySQL *does* support enums — uncomment the enum blocks near the top of the
    schema and switch those fields back to the enum types to get DB-level
    validation in production.
-2. In hPanel, create a MySQL database (Databases → MySQL Databases) and note
-   the host, database name, username, and password it gives you.
-3. Set `DATABASE_URL` in `.env` (and in hPanel's Node.js app environment
-   variables panel) to:
-   `mysql://username:password@host:3306/database_name`
-4. Run `npx prisma migrate dev` locally against a test MySQL instance (or
-   `prisma migrate deploy` directly against the Hostinger DB) to apply the schema.
-5. In hPanel's Node.js section: create the app, point it at this repo's
-   `src/index.js` as the entry file, set the same environment variables from
-   `.env` there, and let hPanel handle the process (it manages restarts/PM2
-   equivalent for you).
-6. Uploads: either deploy the `uploads/` folder alongside the app, or point to
-   a persistent storage path Hostinger gives the Node app — confirm this
-   folder survives redeploys before relying on it in production.
+2. On the VPS, create a MySQL database and user for the app (`mysql` CLI or
+   equivalent) and note the database name, username, and password.
+3. Set `DATABASE_URL` in the VPS app's `.env` (at
+   `/var/www/auramed-spa-platform/.env`) to:
+   `mysql://username:password@localhost:3306/database_name`
+4. Run `npx prisma migrate dev` locally against a test MySQL instance first,
+   then `prisma migrate deploy` on the VPS to apply the schema against the
+   real production database.
+5. Deploy by pulling into `/var/www/auramed-spa-platform` on the VPS
+   (`git pull`), installing any new dependencies (`npm install`), applying
+   pending migrations (`prisma migrate deploy`), and restarting the process:
+   `pm2 restart auramed`. Unlike hPanel, PM2 does not auto-restart on a plain
+   `git pull` — the restart step is required.
+6. Uploads: the `uploads/` folder lives directly on the VPS at
+   `/var/www/auramed-spa-platform/uploads` — persists across `git pull`
+   deploys (it's gitignored, not part of the repo), but isn't backed up
+   separately. Consider that before relying on it long-term.
 
 ## Folder structure
 
