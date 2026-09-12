@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const prisma = require("../lib/prisma");
 const { requireAuth, requireRole } = require("../middleware/auth");
 const { generateCode } = require("./referrals");
+const { POINTS_PER_VISIT } = require("./loyalty");
 
 const router = express.Router();
 
@@ -125,6 +126,24 @@ router.patch("/:id/confirm", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), a
   await prisma.review.create({
     data: { bookingId: booking.id, token: crypto.randomBytes(20).toString("hex") },
   });
+
+  // Award loyalty points if this booking belongs to a registered member.
+  // Guest bookings are silently skipped — Members only, per the client's
+  // decision for this feature.
+  if (booking.memberId) {
+    const treatment = await prisma.treatment.findUnique({ where: { id: booking.treatmentId } });
+    await prisma.loyaltyTransaction.create({
+      data: {
+        memberId: booking.memberId,
+        points: POINTS_PER_VISIT,
+        reason: `Visit: ${treatment ? treatment.name : "treatment"}`,
+      },
+    });
+    await prisma.member.update({
+      where: { id: booking.memberId },
+      data: { loyaltyPoints: { increment: POINTS_PER_VISIT } },
+    });
+  }
 
   // TODO: trigger notification on booking.notificationChannel
   res.json(booking);

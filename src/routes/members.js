@@ -47,6 +47,23 @@ router.post("/login", async (req, res) => {
   res.json({ token });
 });
 
+// GET /api/members/me — the logged-in member's own profile, for their
+// dashboard. Uses the same requireAuth/requireRole middleware as admin
+// routes — the JWT from POST /api/members/login already carries role:
+// "MEMBER", so requireRole("MEMBER") works identically to how it works
+// for SUPER_ADMIN/STAFF elsewhere.
+router.get("/me", requireAuth, requireRole("MEMBER"), async (req, res) => {
+  const member = await prisma.member.findUnique({
+    where: { id: req.user.sub },
+    select: {
+      id: true, firstName: true, lastName: true, email: true,
+      membershipTier: true, loyaltyPoints: true,
+    },
+  });
+  if (!member) return res.status(404).json({ error: "Member not found" });
+  res.json(member);
+});
+
 // GET /api/members — Super Admin only, view-only list (no edit endpoint per spec)
 router.get("/", requireAuth, requireRole("SUPER_ADMIN"), async (req, res) => {
   const members = await prisma.member.findMany({

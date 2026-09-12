@@ -123,10 +123,12 @@ model Member {
   membershipTier                String   // SILVER | GOLD | PLATINUM | VIP | NOT_SURE
   marketingOptIn                Boolean
   agreedToTerms                 Boolean
+  loyaltyPoints                 Int      @default(0)
   createdAt                     DateTime @default(now())
 
-  bookings Booking[]
-  orders   Order[]
+  bookings            Booking[]
+  orders              Order[]
+  loyaltyTransactions LoyaltyTransaction[]
 }
 
 // Booking = request-and-confirm model (see spec §4.9)
@@ -250,4 +252,19 @@ model Referral {
 
   referralCode     ReferralCode  @relation(fields: [referralCodeId], references: [id])
   refereeBooking   Booking       @relation(fields: [refereeBookingId], references: [id])
+}
+
+// A running ledger of every point movement — earn (positive) or redeem
+// (negative) — so there's always an audit trail, not just a running total.
+// Member.loyaltyPoints is a denormalized cache of the sum, kept in sync
+// whenever a transaction is created (see loyalty.js and the bookings.js
+// confirm-handler patch).
+model LoyaltyTransaction {
+  id        String   @id @default(cuid())
+  memberId  String
+  points    Int      // positive = earned, negative = redeemed
+  reason    String   // e.g. "Visit: Hydrafacial" or "Redeemed — $15 off (staff: Jane)"
+  createdAt DateTime @default(now())
+
+  member    Member   @relation(fields: [memberId], references: [id])
 }

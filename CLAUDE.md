@@ -263,6 +263,36 @@ no framework. Served by Express alongside everything else in `public/`.
   `GET /api/reviews/public`, same pattern as the other homepage content gaps
   (treatments/shop/team lists, homepage products carousel) found earlier.
 
+## Member Accounts & Loyalty Points
+- **Member registration/login now actually exist on the frontend** at
+  `/account/register.html` and `/account/login.html` — the backend endpoints
+  (`POST /api/members/register`, `POST /api/members/login`) always existed,
+  but nothing on the frontend used them until this delta. A logged-in member
+  gets `/account/dashboard.html` (points balance + basic profile) via a
+  separate `MemberAuth` session helper (`public/account/account.js`) — its
+  own token/localStorage key, distinct from `AdminAuth`, since members and
+  admin staff are different roles with different login pages.
+- **Loyalty points are Member-only.** Flat 10 points per confirmed booking
+  (`POINTS_PER_VISIT` in `src/routes/loyalty.js`), awarded automatically in
+  `PATCH /api/bookings/:id/confirm` alongside the existing referral-reward
+  and review-creation logic — guest bookings (no `memberId`) are silently
+  skipped, same as the referral program's members-vs-guests split.
+  `Member.loyaltyPoints` is a denormalized running total; `LoyaltyTransaction`
+  is the full audit ledger (positive = earned, negative = redeemed).
+  **The discount itself is applied manually by staff** via admin →
+  Loyalty Points (`POST /api/loyalty/:memberId/redeem`, requires a note) —
+  no automated discount/payment logic, same pattern as referrals.
+- **Booking as a guest is still fully unaffected — this was a hard
+  requirement.** Login on `/appointment.html` is informational only: a
+  `#memberBanner` shows a "log in to earn points" nudge when logged out, or
+  "Booking as [name] — you have N points" when logged in, but never gates or
+  disables the guest fields. A logged-in member's booking additionally sends
+  `memberId`, which only affects whether points get awarded on confirm.
+- **Note:** registration intentionally has no profile-photo upload yet — the
+  upload endpoint (`POST /api/uploads`) is Super-Admin-only, so members can't
+  use it as-is. A member-accessible upload path is a reasonable small
+  follow-up, not built here.
+
 ## Open items still pending client input (see spec §5)
 - Whether guest checkout requires at least email/phone capture before payment
 - Whether members can self-cancel a booking, or must go through staff

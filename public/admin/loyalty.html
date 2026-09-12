@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loyalty Points | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Loyalty Points</h1>
+          <p>Members earn 10 points per confirmed visit. Redeem manually once a discount has been applied.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Member</th><th>Tier</th><th>Points Balance</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No members with a points balance yet.</div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2>Redeem Points</h2>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">Confirm the discount was already applied at checkout — this just records it.</p>
+      <div class="error-banner" id="formError"></div>
+      <form id="form">
+        <input type="hidden" id="redeemMemberId">
+        <div class="form-group">
+          <label>Member's current balance</label>
+          <input type="text" id="currentBalance" disabled>
+        </div>
+        <div class="form-group">
+          <label>Points to redeem</label>
+          <input type="number" id="pointsToRedeem" required min="1">
+        </div>
+        <div class="form-group">
+          <label>Note (what discount was given)</label>
+          <input type="text" id="redeemNote" required placeholder="e.g. $15 off Hydrafacial">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn" id="saveBtn">Confirm Redemption</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN", "STAFF"]);
+    AdminAuth.renderSidebar("loyalty.html");
+
+    async function loadLoyalty() {
+      const members = await AdminAuth.authFetch("/api/loyalty");
+      document.getElementById("emptyState").style.display = members.length ? "none" : "block";
+      document.getElementById("rows").innerHTML = members.map((m) => `
+        <tr>
+          <td>${m.firstName} ${m.lastName}<br><span style="color:var(--text-muted); font-size:0.78rem;">${m.email}</span></td>
+          <td>${m.membershipTier}</td>
+          <td style="font-weight:600; color:var(--accent);">${m.loyaltyPoints}</td>
+          <td><button class="btn btn-small" onclick="openRedeem('${m.id}', ${m.loyaltyPoints})">Redeem</button></td>
+        </tr>
+      `).join("");
+    }
+
+    window.openRedeem = (memberId, balance) => {
+      document.getElementById("form").reset();
+      document.getElementById("formError").classList.remove("show");
+      document.getElementById("redeemMemberId").value = memberId;
+      document.getElementById("currentBalance").value = balance + " points";
+      document.getElementById("pointsToRedeem").max = balance;
+      document.getElementById("modalOverlay").classList.add("open");
+    };
+    document.getElementById("cancelBtn").addEventListener("click", () => {
+      document.getElementById("modalOverlay").classList.remove("open");
+    });
+
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formError = document.getElementById("formError");
+      formError.classList.remove("show");
+      const memberId = document.getElementById("redeemMemberId").value;
+      try {
+        await AdminAuth.authFetch(`/api/loyalty/${memberId}/redeem`, {
+          method: "POST",
+          body: JSON.stringify({
+            points: document.getElementById("pointsToRedeem").value,
+            note: document.getElementById("redeemNote").value,
+          }),
+        });
+        document.getElementById("modalOverlay").classList.remove("open");
+        loadLoyalty();
+      } catch (err) {
+        formError.textContent = err.message;
+        formError.classList.add("show");
+      }
+    });
+
+    loadLoyalty();
+  </script>
+</body>
+</html>

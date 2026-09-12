@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log In | AuraMed Spa & Wellness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary:#1c2b24; --accent:#d4af37; --bg-sand:#faf8f5; --text-muted:#666; --border:rgba(28,43,36,0.12); }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg-sand); display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
+    .card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:2.5rem; max-width:400px; width:100%; }
+    h1 { font-family:'Playfair Display',serif; font-weight:400; text-align:center; margin-bottom:0.4rem; color:var(--primary); }
+    .subtitle { text-align:center; color:var(--text-muted); font-size:0.85rem; margin-bottom:2rem; }
+    .field { margin-bottom:1rem; }
+    label { display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.35rem; }
+    input { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:6px; font-family:inherit; font-size:0.9rem; }
+    button { width:100%; padding:0.85rem; margin-top:0.5rem; background:var(--primary); color:#fff; border:none; border-radius:8px; font-size:0.95rem; cursor:pointer; }
+    .error { color:#a83c3c; font-size:0.85rem; margin-top:0.75rem; display:none; }
+    .success { color:#3c7a4f; font-size:0.85rem; margin-bottom:1rem; text-align:center; }
+    .register-link { text-align:center; margin-top:1.5rem; font-size:0.85rem; color:var(--text-muted); }
+    .register-link a { color:var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Log in to book faster and track your loyalty points</p>
+    <p class="success" id="successMsg" style="display:none;">Account created — log in below.</p>
+    <form id="form">
+      <div class="field"><label>Email</label><input type="email" id="email" required></div>
+      <div class="field"><label>Password</label><input type="password" id="password" required></div>
+      <button type="submit" id="submitBtn">Log In</button>
+      <p class="error" id="err"></p>
+    </form>
+    <p class="register-link">New here? <a href="/account/register.html">Create an account</a></p>
+  </div>
+
+  <script src="/account/account.js"></script>
+  <script>
+    if (MemberAuth.isLoggedIn()) window.location.href = "/account/dashboard.html";
+    if (new URLSearchParams(window.location.search).get("registered")) {
+      document.getElementById("successMsg").style.display = "block";
+    }
+
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = document.getElementById("err");
+      err.style.display = "none";
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.textContent = "Logging in...";
+
+      try {
+        const res = await fetch("/api/members/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Login failed");
+        MemberAuth.setSession(data.token);
+        // If they arrived here mid-booking, send them back to finish it.
+        const redirect = new URLSearchParams(window.location.search).get("redirect");
+        window.location.href = redirect || "/account/dashboard.html";
+      } catch (e2) {
+        err.textContent = e2.message;
+        err.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Log In";
+      }
+    });
+  </script>
+</body>
+</html>

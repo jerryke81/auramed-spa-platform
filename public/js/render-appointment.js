@@ -73,8 +73,41 @@
     }
   }
 
+  let loggedInMember = null;
+
+  // Detects a logged-in member and shows a status banner — informational
+  // only, never a gate. A guest who ignores this experiences zero
+  // difference from before this feature existed (see CLAUDE.md — Loyalty).
+  async function checkMemberStatus() {
+    if (!MemberAuth.isLoggedIn()) {
+      document.getElementById("memberBanner").innerHTML = `
+        <div style="background:#faf5e6; border:1px solid #d4af37; border-radius:8px; padding:0.85rem 1rem; margin-bottom:1.5rem; font-size:0.85rem;">
+          <a href="/account/login.html?redirect=/appointment.html" style="color:#1c2b24; font-weight:600;">Log in</a>
+          or <a href="/account/register.html" style="color:#1c2b24; font-weight:600;">create an account</a>
+          to earn loyalty points on this visit.
+        </div>`;
+      return;
+    }
+    try {
+      loggedInMember = await MemberAuth.authFetch("/api/members/me");
+      document.getElementById("memberBanner").innerHTML = `
+        <div style="background:#eef5ee; border:1px solid #3c7a4f; border-radius:8px; padding:0.85rem 1rem; margin-bottom:1.5rem; font-size:0.85rem;">
+          Booking as <strong>${loggedInMember.firstName} ${loggedInMember.lastName}</strong> —
+          you have ${loggedInMember.loyaltyPoints} loyalty points.
+          <a href="#" onclick="MemberAuth.logout(); return false;" style="color:#a83c3c;">Not you?</a>
+        </div>`;
+      // Pre-fill and lock the contact fields since we already know them
+      document.getElementById("first_name").value = loggedInMember.firstName;
+      document.getElementById("last_name").value = loggedInMember.lastName;
+      document.getElementById("email_address").value = loggedInMember.email;
+    } catch (err) {
+      // Token expired or invalid — treat as logged out, don't block booking
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     loadTreatments();
+    checkMemberStatus();
 
     document.getElementById("booking_date").addEventListener("change", updateSummary);
     document.getElementById("booking_time").addEventListener("change", updateSummary);
@@ -118,6 +151,7 @@
             guestPhone: document.getElementById("phone_number").value,
             notes: document.getElementById("clinical_notes").value,
             referredByCode: document.getElementById("referral_code").value.trim().toUpperCase() || undefined,
+            memberId: loggedInMember ? loggedInMember.id : undefined,
           }),
         });
 

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Your Account | AuraMed Spa & Wellness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary:#1c2b24; --accent:#d4af37; --bg-sand:#faf8f5; --text-dark:#222; --text-muted:#666; --border:rgba(28,43,36,0.12); }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg-sand); color:var(--text-dark); padding:3rem 1.5rem; }
+    .wrap { max-width:640px; margin:0 auto; background:#fff; border:1px solid var(--border); border-radius:14px; padding:2.5rem; }
+    h1 { font-family:'Playfair Display',serif; font-weight:400; color:var(--primary); margin-bottom:0.4rem; }
+    .subtitle { color:var(--text-muted); font-size:0.9rem; margin-bottom:2rem; }
+    h2 { font-family:'Playfair Display',serif; font-weight:400; font-size:1.1rem; color:var(--primary); margin:2rem 0 1rem; border-top:1px solid var(--border); padding-top:1.5rem; }
+    h2:first-of-type { border-top:none; padding-top:0; margin-top:0; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .field { margin-bottom:1rem; }
+    label { display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.35rem; }
+    input, select, textarea { width:100%; padding:0.7rem; border:1px solid var(--border); border-radius:6px; font-family:inherit; font-size:0.9rem; }
+    .checkbox-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; border:1px solid var(--border); border-radius:6px; padding:0.85rem; }
+    .checkbox-grid label { display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color:var(--text-dark); margin:0; }
+    .checkbox-grid input { width:auto; }
+    .inline-check { display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; }
+    .inline-check input { width:auto; }
+    .inline-check label { margin:0; font-size:0.85rem; color:var(--text-dark); }
+    button { width:100%; padding:0.9rem; margin-top:1rem; background:var(--primary); color:#fff; border:none; border-radius:8px; font-size:0.95rem; cursor:pointer; }
+    .error { color:#a83c3c; font-size:0.85rem; margin-top:0.5rem; display:none; padding:0.75rem; background:rgba(168,60,60,0.08); border-radius:6px; }
+    .login-link { text-align:center; margin-top:1.5rem; font-size:0.85rem; color:var(--text-muted); }
+    .login-link a { color:var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Create Your Account</h1>
+    <p class="subtitle">Members book faster, keep a visit history, and earn loyalty points on every confirmed appointment.</p>
+    <p class="error" id="formError"></p>
+
+    <form id="form">
+      <h2>Your Details</h2>
+      <div class="row">
+        <div class="field"><label>First Name</label><input type="text" id="firstName" required></div>
+        <div class="field"><label>Last Name</label><input type="text" id="lastName" required></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Middle Name (optional)</label><input type="text" id="middleName"></div>
+        <div class="field"><label>Gender</label>
+          <select id="gender" required>
+            <option value="">— select —</option>
+            <option value="Female">Female</option>
+            <option value="Male">Male</option>
+            <option value="Other">Other</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Date of Birth</label><input type="date" id="dob" required></div>
+        <div class="field"><label>Nationality</label><input type="text" id="nationality" required></div>
+      </div>
+
+      <h2>Contact</h2>
+      <div class="field"><label>Email Address</label><input type="email" id="email" required></div>
+      <div class="row">
+        <div class="field"><label>Mobile Number</label><input type="tel" id="mobile" required></div>
+        <div class="field"><label>Physical Address</label><input type="text" id="physicalAddress" required></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Password</label><input type="password" id="password" required minlength="8"></div>
+        <div class="field"><label>Confirm Password</label><input type="password" id="confirmPassword" required minlength="8"></div>
+      </div>
+
+      <h2>Health Conditions <span style="font-weight:300; color:var(--text-muted);">(check any that apply)</span></h2>
+      <div class="checkbox-grid" id="healthConditions">
+        <label><input type="checkbox" value="High blood pressure">High blood pressure</label>
+        <label><input type="checkbox" value="Diabetes">Diabetes</label>
+        <label><input type="checkbox" value="Pregnancy">Pregnancy</label>
+        <label><input type="checkbox" value="Asthma">Asthma</label>
+        <label><input type="checkbox" value="Heart condition">Heart condition</label>
+        <label><input type="checkbox" value="Recent surgeries">Recent surgeries</label>
+        <label><input type="checkbox" value="Allergies">Allergies</label>
+        <label><input type="checkbox" value="Other">Other</label>
+      </div>
+
+      <h2>Interested Services <span style="font-weight:300; color:var(--text-muted);">(select any)</span></h2>
+      <div class="checkbox-grid" id="interestedServices">
+        <label><input type="checkbox" value="Massage">Massage</label>
+        <label><input type="checkbox" value="Facial">Facial</label>
+        <label><input type="checkbox" value="Body Scrub">Body Scrub</label>
+        <label><input type="checkbox" value="Body Wrap">Body Wrap</label>
+        <label><input type="checkbox" value="Reflexology">Reflexology</label>
+        <label><input type="checkbox" value="Aromatherapy">Aromatherapy</label>
+        <label><input type="checkbox" value="Waxing">Waxing</label>
+        <label><input type="checkbox" value="Jacuzzi">Jacuzzi</label>
+        <label><input type="checkbox" value="Steam Bath">Steam Bath</label>
+        <label><input type="checkbox" value="Sauna">Sauna</label>
+        <label><input type="checkbox" value="Manicure">Manicure</label>
+        <label><input type="checkbox" value="Pedicure">Pedicure</label>
+        <label><input type="checkbox" value="Hair Spa">Hair Spa</label>
+        <label><input type="checkbox" value="Couples Package">Couples Package</label>
+        <label><input type="checkbox" value="Wellness Consultation">Wellness Consultation</label>
+      </div>
+
+      <h2>Emergency Contact</h2>
+      <div class="row">
+        <div class="field"><label>Full Name</label><input type="text" id="emergencyContactName" required></div>
+        <div class="field"><label>Relationship</label><input type="text" id="emergencyContactRelationship" required></div>
+      </div>
+      <div class="field"><label>Phone Number</label><input type="tel" id="emergencyContactPhone" required></div>
+
+      <h2>Membership & Preferences</h2>
+      <div class="field">
+        <label>Membership Tier Preference</label>
+        <select id="membershipTier" required>
+          <option value="NOT_SURE">Not sure yet</option>
+          <option value="SILVER">Silver</option>
+          <option value="GOLD">Gold</option>
+          <option value="PLATINUM">Platinum</option>
+          <option value="VIP">VIP</option>
+        </select>
+      </div>
+      <div class="inline-check"><input type="checkbox" id="marketingOptIn"><label for="marketingOptIn">I'd like to receive promotions and updates</label></div>
+      <div class="inline-check"><input type="checkbox" id="agreedToTerms" required><label for="agreedToTerms">I agree to the Terms of Service and Privacy Policy, and understand certain treatments may require disclosure of medical conditions</label></div>
+
+      <button type="submit" id="submitBtn">Create Account</button>
+    </form>
+    <p class="login-link">Already have an account? <a href="/account/login.html">Log in</a></p>
+  </div>
+
+  <script>
+    // NOTE: profile photo upload is intentionally omitted for now — the
+    // upload endpoint (POST /api/uploads) is Super-Admin-only, so members
+    // can't use it as-is. Adding a member-accessible upload path is a
+    // separate small follow-up if a profile photo is wanted later.
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = document.getElementById("formError");
+      err.style.display = "none";
+
+      if (document.getElementById("password").value !== document.getElementById("confirmPassword").value) {
+        err.textContent = "Passwords do not match.";
+        err.style.display = "block";
+        return;
+      }
+
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.textContent = "Creating account...";
+
+      const healthConditions = Array.from(document.querySelectorAll("#healthConditions input:checked")).map(el => el.value);
+      const interestedServices = Array.from(document.querySelectorAll("#interestedServices input:checked")).map(el => el.value);
+
+      try {
+        const res = await fetch("/api/members/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firstName: document.getElementById("firstName").value,
+            middleName: document.getElementById("middleName").value,
+            lastName: document.getElementById("lastName").value,
+            gender: document.getElementById("gender").value,
+            dob: document.getElementById("dob").value,
+            nationality: document.getElementById("nationality").value,
+            mobile: document.getElementById("mobile").value,
+            email: document.getElementById("email").value,
+            physicalAddress: document.getElementById("physicalAddress").value,
+            password: document.getElementById("password").value,
+            healthConditions,
+            interestedServices,
+            emergencyContactName: document.getElementById("emergencyContactName").value,
+            emergencyContactRelationship: document.getElementById("emergencyContactRelationship").value,
+            emergencyContactPhone: document.getElementById("emergencyContactPhone").value,
+            membershipTier: document.getElementById("membershipTier").value,
+            marketingOptIn: document.getElementById("marketingOptIn").checked,
+            agreedToTerms: document.getElementById("agreedToTerms").checked,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Registration failed");
+        window.location.href = "/account/login.html?registered=1";
+      } catch (e2) {
+        err.textContent = e2.message;
+        err.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Create Account";
+      }
+    });
+  </script>
+</body>
+</html>

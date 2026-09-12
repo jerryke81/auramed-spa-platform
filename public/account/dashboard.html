@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account | AuraMed Spa & Wellness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary:#1c2b24; --accent:#d4af37; --bg-sand:#faf8f5; --text-muted:#666; --border:rgba(28,43,36,0.12); }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg-sand); padding:3rem 1.5rem; }
+    .wrap { max-width:640px; margin:0 auto; }
+    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; }
+    h1 { font-family:'Playfair Display',serif; font-weight:400; color:var(--primary); }
+    button.logout { background:transparent; border:1px solid var(--border); padding:0.6rem 1.2rem; border-radius:6px; cursor:pointer; font-size:0.85rem; }
+    .card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:2rem; margin-bottom:1.5rem; }
+    .points-display { text-align:center; padding:1rem 0; }
+    .points-number { font-family:'Playfair Display',serif; font-size:3rem; color:var(--accent); }
+    .points-label { color:var(--text-muted); font-size:0.85rem; }
+    .info-row { display:flex; justify-content:space-between; padding:0.6rem 0; border-bottom:1px solid var(--border); font-size:0.9rem; }
+    .info-row:last-child { border-bottom:none; }
+    .info-label { color:var(--text-muted); }
+    a.cta { display:block; text-align:center; background:var(--primary); color:#fff; padding:0.9rem; border-radius:8px; text-decoration:none; font-size:0.95rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>My Account</h1>
+      <button class="logout" onclick="MemberAuth.logout()">Log Out</button>
+    </div>
+
+    <div class="card">
+      <div class="points-display">
+        <div class="points-number" id="pointsBalance">—</div>
+        <div class="points-label">Loyalty Points</div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.5rem;">Earned on every confirmed visit — ask our team about redeeming points for a discount on your next appointment.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="info-row"><span class="info-label">Name</span><span id="fullName">—</span></div>
+      <div class="info-row"><span class="info-label">Email</span><span id="email">—</span></div>
+    </div>
+
+    <a href="/appointment.html" class="cta">Book an Appointment</a>
+  </div>
+
+  <script src="/account/account.js"></script>
+  <script>
+    MemberAuth.requireAuth();
+
+    (async () => {
+      try {
+        const me = await MemberAuth.authFetch("/api/members/me");
+        document.getElementById("fullName").textContent = `${me.firstName} ${me.lastName}`;
+        document.getElementById("email").textContent = me.email;
+        document.getElementById("pointsBalance").textContent = me.loyaltyPoints;
+      } catch (err) {
+        if (err.message.includes("expired")) window.location.href = "/account/login.html";
+      }
+    })();
+  </script>
+</body>
+</html>
