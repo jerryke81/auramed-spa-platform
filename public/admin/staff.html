@@ -22,7 +22,7 @@
 
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Position</th><th>Date of Birth</th><th></th></tr></thead>
+          <thead><tr><th>Name</th><th>Position</th><th>Date of Birth</th><th>Login</th><th></th></tr></thead>
           <tbody id="rows"></tbody>
         </table>
       </div>
@@ -56,6 +56,23 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="loginModalOverlay">
+    <div class="modal">
+      <h2>Create Staff Login</h2>
+      <div class="error-banner" id="loginFormError"></div>
+      <form id="loginForm">
+        <input type="hidden" id="loginStaffId">
+        <div class="form-group"><label>Staff Member</label><input type="text" id="loginStaffName" disabled></div>
+        <div class="form-group"><label>Email</label><input type="email" id="loginEmail" required></div>
+        <div class="form-group"><label>Password</label><input type="password" id="loginPassword" required minlength="8"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="document.getElementById('loginModalOverlay').classList.remove('open')">Cancel</button>
+          <button type="submit" class="btn">Create Login</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="/admin/admin.js"></script>
   <script>
     AdminAuth.requireAuth(["SUPER_ADMIN"]);
@@ -84,22 +101,78 @@
     document.getElementById("addBtn").addEventListener("click", () => openModal(null));
     document.getElementById("cancelBtn").addEventListener("click", closeModal);
 
+    let staffAccounts = [];
+    async function loadStaffAccounts() {
+      staffAccounts = await AdminAuth.authFetch("/api/admin/staff-accounts");
+    }
+
     async function loadStaff() {
       const staff = await AdminAuth.authFetch("/api/staff");
       emptyState.style.display = staff.length ? "none" : "block";
-      rowsEl.innerHTML = staff.map((s) => `
+      rowsEl.innerHTML = staff.map((s) => {
+        const account = staffAccounts.find(a => a.staffId === s.id);
+        return `
         <tr>
           <td>${s.name}</td>
           <td>${s.position}</td>
           <td>${s.dob.slice(0, 10)}</td>
+          <td>${account
+            ? `<span class="badge badge-confirmed">Has login</span> <button class="btn btn-outline btn-small" onclick="resetPassword('${account.id}')">Reset Password</button>`
+            : `<button class="btn btn-outline btn-small" onclick="createLogin('${s.id}', '${s.name}')">Create Login</button>`
+          }</td>
           <td style="white-space:nowrap;">
             <button class="btn btn-outline btn-small" onclick="editStaff('${s.id}')">Edit</button>
             <button class="btn btn-danger btn-small" onclick="deleteStaff('${s.id}')">Delete</button>
           </td>
         </tr>
-      `).join("");
+      `;
+      }).join("");
       window._staff = staff;
     }
+
+    window.createLogin = (staffId, staffName) => {
+      document.getElementById("loginForm").reset();
+      document.getElementById("loginFormError").classList.remove("show");
+      document.getElementById("loginStaffId").value = staffId;
+      document.getElementById("loginStaffName").value = staffName;
+      document.getElementById("loginModalOverlay").classList.add("open");
+    };
+
+    window.resetPassword = async (accountId) => {
+      const newPassword = prompt("Enter a new password (8+ characters) for this staff account:");
+      if (!newPassword) return;
+      try {
+        await AdminAuth.authFetch(`/api/admin/staff-accounts/${accountId}/reset-password`, {
+          method: "PATCH",
+          body: JSON.stringify({ password: newPassword }),
+        });
+        alert("Password reset.");
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = document.getElementById("loginFormError");
+      err.classList.remove("show");
+      try {
+        await AdminAuth.authFetch("/api/admin/staff-accounts", {
+          method: "POST",
+          body: JSON.stringify({
+            staffId: document.getElementById("loginStaffId").value,
+            email: document.getElementById("loginEmail").value,
+            password: document.getElementById("loginPassword").value,
+          }),
+        });
+        document.getElementById("loginModalOverlay").classList.remove("open");
+        await loadStaffAccounts();
+        loadStaff(); // re-render the table with updated login status
+      } catch (err2) {
+        err.textContent = err2.message;
+        err.classList.add("show");
+      }
+    });
 
     window.editStaff = (id) => openModal(window._staff.find((s) => s.id === id));
 
@@ -132,7 +205,10 @@
       }
     });
 
-    loadStaff();
+    (async () => {
+      await loadStaffAccounts();
+      await loadStaff();
+    })();
   </script>
 </body>
 </html>

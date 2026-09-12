@@ -26,6 +26,7 @@ app.use("/api/uploads", require("./routes/uploads"));
 app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/referrals", require("./routes/referrals"));
 app.use("/api/loyalty", require("./routes/loyalty"));
+app.use("/api/schedule", require("./routes/schedule"));
 
 // Basic error handler
 app.use((err, req, res, next) => {

@@ -293,6 +293,29 @@ no framework. Served by Express alongside everything else in `public/`.
   use it as-is. A member-accessible upload path is a reasonable small
   follow-up, not built here.
 
+## Staff Login & Daily Schedule
+- **A Staff profile and an `AdminUser` login are separate things**, linked
+  via `AdminUser.staffId`. A Staff profile can exist with no login (someone
+  who doesn't need system access — e.g. a masseuse who never touches the
+  admin panel); the reverse isn't possible — a login always *optionally*
+  references a Staff profile, never required to. Logins are created via
+  admin → Staff (Super Admin only): "Create Login" per staff row
+  (`POST /api/admin/staff-accounts`), "Reset Password" once one exists
+  (`PATCH /api/admin/staff-accounts/:id/reset-password`). The role-based
+  login/sidebar filtering this relies on already existed at the
+  infrastructure level (login page, JWT, `requireRole`) — what was missing
+  was any way to actually *create* a STAFF-role account; this closes that
+  gap, it doesn't add new auth machinery.
+- **Daily Schedule** (admin → Schedule, `GET /api/schedule?date=YYYY-MM-DD`,
+  both roles) is a per-specialist view of one day's bookings — a different
+  shape from the Booking Queue, which is pending-request-first, not
+  therapist/day. Includes bookings of any status except `CANCELLED`
+  (`PENDING` assignments show too, tagged with a status badge, since a
+  tentative plan still matters for the day) grouped under the specialist
+  they're assigned to, plus a separate "Not Yet Assigned" section for
+  same-day bookings with no specialist — each links back to the Booking
+  Queue to assign one.
+
 ## Open items still pending client input (see spec §5)
 - Whether guest checkout requires at least email/phone capture before payment
 - Whether members can self-cancel a booking, or must go through staff

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <style>
+    .schedule-day {
+      background: #fff; border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.25rem 1.5rem; margin-bottom: 1.25rem;
+    }
+    .schedule-day-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+    .schedule-day-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .schedule-day-header h3 { font-size: 1rem; font-family: 'Playfair Display', serif; font-weight: 500; color: var(--primary); }
+    .schedule-slot {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 0; border-top: 1px solid var(--border); font-size: 0.88rem;
+    }
+    .schedule-slot:first-of-type { border-top: none; }
+    .slot-time { font-weight: 600; color: var(--primary); min-width: 90px; }
+    .slot-details { flex-grow: 1; padding: 0 1rem; }
+    .slot-contact { color: var(--text-muted); font-size: 0.8rem; }
+    .no-bookings { color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0; }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Daily Schedule</h1>
+          <p>Each therapist's assigned bookings for the selected day.</p>
+        </div>
+        <input type="date" id="datePicker" style="padding:0.6rem; border:1px solid var(--border); border-radius:6px; font-family:inherit;">
+      </div>
+
+      <div id="scheduleContainer"></div>
+
+      <h2 style="font-family:'Playfair Display',serif; font-weight:400; font-size:1.15rem; color:var(--primary); margin:2rem 0 1rem;">Not Yet Assigned</h2>
+      <div class="schedule-day" id="unassignedContainer"></div>
+    </main>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN", "STAFF"]);
+    AdminAuth.renderSidebar("schedule.html");
+
+    function statusBadge(status) {
+      const map = {
+        PENDING: '<span class="badge badge-pending">Pending</span>',
+        CONFIRMED: '<span class="badge badge-confirmed">Confirmed</span>',
+        DECLINED: '<span class="badge badge-declined">Declined</span>',
+      };
+      return map[status] || status;
+    }
+
+    function contactLine(b) {
+      if (b.member) return `${b.member.firstName} ${b.member.lastName} · ${b.member.email}`;
+      return `${b.guestName || "Guest"} · ${b.guestEmail || b.guestPhone || ""}`;
+    }
+
+    function formatTime(dt) {
+      return new Date(dt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    async function loadSchedule() {
+      const date = document.getElementById("datePicker").value;
+      const data = await AdminAuth.authFetch(`/api/schedule?date=${date}`);
+
+      const container = document.getElementById("scheduleContainer");
+      container.innerHTML = data.schedule.map((entry) => `
+        <div class="schedule-day">
+          <div class="schedule-day-header">
+            <img src="${entry.specialist.photoUrl}" alt="" onerror="this.style.visibility='hidden'">
+            <h3>${entry.specialist.name}</h3>
+          </div>
+          ${entry.bookings.length
+            ? entry.bookings.map((b) => `
+                <div class="schedule-slot">
+                  <span class="slot-time">${formatTime(b.requestedDatetime)}</span>
+                  <div class="slot-details">
+                    <strong>${b.treatment ? b.treatment.name : "—"}</strong>
+                    <div class="slot-contact">${contactLine(b)}</div>
+                  </div>
+                  ${statusBadge(b.status)}
+                </div>
+              `).join("")
+            : `<p class="no-bookings">No bookings scheduled.</p>`
+          }
+        </div>
+      `).join("") || `<p class="no-bookings">No specialists on file yet.</p>`;
+
+      const unassignedContainer = document.getElementById("unassignedContainer");
+      unassignedContainer.innerHTML = data.unassigned.length
+        ? data.unassigned.map((b) => `
+            <div class="schedule-slot">
+              <span class="slot-time">${formatTime(b.requestedDatetime)}</span>
+              <div class="slot-details">
+                <strong>${b.treatment ? b.treatment.name : "—"}</strong>
+                <div class="slot-contact">${contactLine(b)}</div>
+              </div>
+              ${statusBadge(b.status)}
+              <a href="bookings.html" class="btn btn-outline btn-small">Assign in Booking Queue</a>
+            </div>
+          `).join("")
+        : `<p class="no-bookings">Everything for this day already has a specialist assigned.</p>`;
+    }
+
+    document.getElementById("datePicker").addEventListener("change", loadSchedule);
+    document.getElementById("datePicker").value = new Date().toISOString().slice(0, 10);
+    loadSchedule();
+  </script>
+</body>
+</html>
