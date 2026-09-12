@@ -227,6 +227,34 @@ no framework. Served by Express alongside everything else in `public/`.
     notes to 60 chars.
     **Requires a Prisma migration** (`npx prisma migrate dev`) since this
     adds a new column — don't skip that step when merging this update.
+
+## Reviews & Referral Program
+- **Review model** — one row per booking, created automatically when staff
+  confirm a booking (`PATCH /api/bookings/:id/confirm`). Token-based, not
+  login-based: the client's review link (`/leave-review.html?token=...`) is
+  an unguessable token, matching how guest bookings already work — no
+  account needed to leave a review. Staff copy/share the link manually from
+  admin → Reviews (no auto-send yet). `isPublished` gates public display —
+  staff approve each submitted review in admin → Reviews before it can show
+  anywhere, protecting against bad-faith submissions. Public feed:
+  `GET /api/reviews/public` (approved + rated only).
+- **ReferralCode / Referral models** — available to guests, not just
+  registered members (client decision, same reasoning as guest booking/cart).
+  Every booker who gives an email gets a code automatically on their first
+  booking (`POST /api/bookings`) if they don't already have one. Entering
+  someone else's code at booking time (`Booking.referredByCode`, optional)
+  creates a `Referral` row with `rewardStatus: PENDING`, which flips to
+  `EARNED` automatically when that referred booking is confirmed. **The 10%
+  reward itself is applied manually by staff** — there is no automated
+  discount/payment logic; staff look the referrer up in admin → Referrals by
+  name/email/phone at their next visit and mark it `REDEEMED` by hand.
+- Appointment form has an optional "Referral Code" field (Step 3); an
+  invalid/mistyped code is silently ignored rather than blocking the booking.
+- **Next step, not done in this delta:** the homepage testimonials section is
+  still hardcoded — it's now a good candidate to wire to
+  `GET /api/reviews/public`, same pattern as the other homepage content gaps
+  (treatments/shop/team lists, homepage products carousel) found earlier.
+
 ## Open items still pending client input (see spec §5)
 - Whether guest checkout requires at least email/phone capture before payment
 - Whether members can self-cancel a booking, or must go through staff

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Your Experience | AuraMed Spa & Wellness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1c2b24; --accent: #d4af37; --bg-sand: #faf8f5;
+      --text-dark: #222222; --text-muted: #666666; --border: rgba(28,43,36,0.1);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg-sand); color:var(--text-dark);
+           display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
+    .card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:3rem;
+            max-width:480px; width:100%; }
+    h1 { font-family:'Playfair Display',serif; font-weight:400; font-size:1.6rem; margin-bottom:0.5rem; color:var(--primary); }
+    .subtitle { color:var(--text-muted); font-size:0.9rem; margin-bottom:2rem; }
+    .stars { display:flex; gap:0.5rem; justify-content:center; margin-bottom:1.5rem; }
+    .star { font-size:2.2rem; cursor:pointer; color:#ddd; transition:color 0.15s; user-select:none; }
+    .star.active { color:var(--accent); }
+    textarea { width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:8px;
+               font-family:inherit; font-size:0.95rem; min-height:120px; resize:vertical; }
+    button { width:100%; padding:0.9rem; margin-top:1.25rem; background:var(--primary); color:#fff;
+             border:none; border-radius:8px; font-size:0.95rem; cursor:pointer; }
+    button:disabled { opacity:0.6; cursor:not-allowed; }
+    .msg { text-align:center; padding:2rem 0; color:var(--text-muted); }
+    .error { color:#a83c3c; font-size:0.85rem; margin-top:0.5rem; display:none; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="msg">Loading...</div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const card = document.getElementById("card");
+    let selectedRating = 0;
+
+    function renderForm(review) {
+      const treatmentName = review.booking && review.booking.treatment ? review.booking.treatment.name : "your visit";
+      card.innerHTML = `
+        <h1>How was your experience?</h1>
+        <p class="subtitle">We'd love to hear about your ${treatmentName} with AuraMed.</p>
+        <div class="stars" id="stars">
+          ${[1,2,3,4,5].map(n => `<span class="star" data-value="${n}">★</span>`).join("")}
+        </div>
+        <textarea id="comment" placeholder="Tell us more (optional)"></textarea>
+        <p class="error" id="err"></p>
+        <button id="submitBtn">Submit Review</button>
+      `;
+      document.querySelectorAll(".star").forEach((star) => {
+        star.addEventListener("click", () => {
+          selectedRating = parseInt(star.dataset.value, 10);
+          document.querySelectorAll(".star").forEach((s) => {
+            s.classList.toggle("active", parseInt(s.dataset.value, 10) <= selectedRating);
+          });
+        });
+      });
+      document.getElementById("submitBtn").addEventListener("click", submitReview);
+    }
+
+    async function submitReview() {
+      const err = document.getElementById("err");
+      err.style.display = "none";
+      if (!selectedRating) {
+        err.textContent = "Please select a star rating.";
+        err.style.display = "block";
+        return;
+      }
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.textContent = "Submitting...";
+      try {
+        const res = await fetch(`/api/reviews/by-token/${token}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rating: selectedRating, comment: document.getElementById("comment").value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Something went wrong");
+        card.innerHTML = `<div class="msg"><h1 style="margin-bottom:1rem;">Thank you!</h1>Your review has been received.</div>`;
+      } catch (e) {
+        err.textContent = e.message;
+        err.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Submit Review";
+      }
+    }
+
+    (async () => {
+      if (!token) {
+        card.innerHTML = `<div class="msg">This review link is missing information — please use the link exactly as shared with you.</div>`;
+        return;
+      }
+      try {
+        const res = await fetch(`/api/reviews/by-token/${token}`);
+        const review = await res.json();
+        if (!res.ok) throw new Error(review.error || "Link not found");
+        if (review.submittedAt) {
+          card.innerHTML = `<div class="msg"><h1 style="margin-bottom:1rem;">Already submitted</h1>You've already left a review for this visit — thank you!</div>`;
+          return;
+        }
+        renderForm(review);
+      } catch (e) {
+        card.innerHTML = `<div class="msg">${e.message}</div>`;
+      }
+    })();
+  </script>
+</body>
+</html>

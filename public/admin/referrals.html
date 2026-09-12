@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Referrals | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Referral Rewards</h1>
+          <p>10% off is applied manually — look up the referrer by name/email/phone when they book next, then mark it redeemed here.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Referrer</th><th>Contact</th><th>Code</th><th>Referred Booking</th><th>Status</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No referrals yet.</div>
+    </main>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN", "STAFF"]);
+    AdminAuth.renderSidebar("referrals.html");
+
+    function statusBadge(status) {
+      if (status === "EARNED") return '<span class="badge badge-pending">Earned — owed 10%</span>';
+      if (status === "REDEEMED") return '<span class="badge badge-confirmed">Redeemed</span>';
+      return '<span class="badge badge-draft">Pending (not yet confirmed)</span>';
+    }
+
+    async function loadReferrals() {
+      const referrals = await AdminAuth.authFetch("/api/referrals");
+      document.getElementById("emptyState").style.display = referrals.length ? "none" : "block";
+      document.getElementById("rows").innerHTML = referrals.map((r) => `
+        <tr>
+          <td>${r.referralCode.ownerName}</td>
+          <td>${r.referralCode.ownerEmail || r.referralCode.ownerPhone || "—"}</td>
+          <td><code>${r.referralCode.code}</code></td>
+          <td>${r.refereeBooking && r.refereeBooking.treatment ? r.refereeBooking.treatment.name : "—"}</td>
+          <td>${statusBadge(r.rewardStatus)}</td>
+          <td>${r.rewardStatus === "EARNED" ? `<button class="btn btn-small" onclick="redeem('${r.id}')">Mark Redeemed</button>` : "—"}</td>
+        </tr>
+      `).join("");
+    }
+
+    window.redeem = async (id) => {
+      if (!confirm("Confirm the 10% discount has been applied to this referrer's booking?")) return;
+      await AdminAuth.authFetch(`/api/referrals/${id}/redeem`, { method: "PATCH" });
+      loadReferrals();
+    };
+
+    loadReferrals();
+  </script>
+</body>
+</html>

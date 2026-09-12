@@ -1,6 +1,8 @@
 const express = require("express");
+const crypto = require("crypto");
 const prisma = require("../lib/prisma");
 const { requireAuth, requireRole } = require("../middleware/auth");
+const { generateCode } = require("./referrals");
 
 const router = express.Router();
 
@@ -9,6 +11,7 @@ router.post("/", async (req, res) => {
   const {
     memberId, guestName, guestEmail, guestPhone,
     treatmentId, requestedDatetime, notificationChannel, notes,
+    referredByCode, // optional code entered at booking time
   } = req.body;
 
   const booking = await prisma.booking.create({
@@ -16,8 +19,42 @@ router.post("/", async (req, res) => {
       memberId, guestName, guestEmail, guestPhone,
       treatmentId, requestedDatetime: new Date(requestedDatetime),
       notificationChannel, notes,
+      referredByCode: referredByCode || null,
     },
   });
+
+  // If a referral code was entered, link this booking to it as a pending
+  // reward for whoever owns that code. Invalid/missing codes are silently
+  // ignored here (not a hard error) so a typo doesn't block booking.
+  if (referredByCode) {
+    const code = await prisma.referralCode.findUnique({
+      where: { code: referredByCode.toUpperCase() },
+    });
+    if (code) {
+      await prisma.referral.create({
+        data: { referralCodeId: code.id, refereeBookingId: booking.id },
+      });
+    }
+  }
+
+  // Every booker becomes a potential referrer themselves. Give them a code
+  // if they (by email) don't already have one. Guests included, not just
+  // registered members, per the client's decision.
+  const contactEmail = guestEmail || null;
+  if (contactEmail) {
+    const existing = await prisma.referralCode.findFirst({ where: { ownerEmail: contactEmail } });
+    if (!existing) {
+      await prisma.referralCode.create({
+        data: {
+          code: generateCode(guestName),
+          ownerName: guestName || "Guest",
+          ownerEmail: contactEmail,
+          ownerPhone: guestPhone || null,
+        },
+      });
+    }
+  }
+
   res.status(201).json(booking);
 });
 
@@ -69,6 +106,21 @@ router.patch("/:id/confirm", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), a
     where: { id: req.params.id },
     data: { status: "CONFIRMED", paymentOption, confirmedAt: new Date() },
   });
+
+  // If this booking used a referral code, the referrer just earned their reward
+  const referral = await prisma.referral.findUnique({ where: { refereeBookingId: booking.id } });
+  if (referral && referral.rewardStatus === "PENDING") {
+    await prisma.referral.update({
+      where: { id: referral.id },
+      data: { rewardStatus: "EARNED" },
+    });
+  }
+
+  // Generate a review link, ready for staff to share whenever they follow up
+  await prisma.review.create({
+    data: { bookingId: booking.id, token: crypto.randomBytes(20).toString("hex") },
+  });
+
   // TODO: trigger notification on booking.notificationChannel
   res.json(booking);
 });

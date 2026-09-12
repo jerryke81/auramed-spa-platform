@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviews | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Reviews</h1>
+          <p>Approve reviews before they show publicly. Share a client's review link from the Booking Queue once their appointment is confirmed.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Treatment</th><th>Rating</th><th>Comment</th><th>Status</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No reviews yet.</div>
+    </main>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN", "STAFF"]);
+    AdminAuth.renderSidebar("reviews.html");
+
+    function stars(n) {
+      if (!n) return "<span style='color:var(--text-muted)'>Not yet submitted</span>";
+      return "★".repeat(n) + "☆".repeat(5 - n);
+    }
+
+    async function loadReviews() {
+      const reviews = await AdminAuth.authFetch("/api/reviews");
+      document.getElementById("emptyState").style.display = reviews.length ? "none" : "block";
+      document.getElementById("rows").innerHTML = reviews.map((r) => `
+        <tr>
+          <td>${r.booking && r.booking.treatment ? r.booking.treatment.name : "—"}</td>
+          <td style="color:var(--accent); white-space:nowrap;">${stars(r.rating)}</td>
+          <td style="max-width:300px;">${r.comment || "—"}</td>
+          <td>${r.submittedAt ? (r.isPublished ? '<span class="badge badge-confirmed">Published</span>' : '<span class="badge badge-pending">Awaiting approval</span>') : '<span class="badge badge-draft">Not submitted</span>'}</td>
+          <td style="white-space:nowrap;">
+            ${r.submittedAt ? `<button class="btn btn-outline btn-small" onclick="togglePublish('${r.id}', ${!r.isPublished})">${r.isPublished ? "Unpublish" : "Publish"}</button>` : `<button class="btn btn-outline btn-small" onclick="copyLink('${r.token}')">Copy Link</button>`}
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    window.togglePublish = async (id, isPublished) => {
+      await AdminAuth.authFetch(`/api/reviews/${id}/publish`, { method: "PATCH", body: JSON.stringify({ isPublished }) });
+      loadReviews();
+    };
+
+    window.copyLink = (token) => {
+      const url = `${window.location.origin}/leave-review.html?token=${token}`;
+      navigator.clipboard.writeText(url);
+      alert("Review link copied — share it with the client via WhatsApp, text, or email:\n" + url);
+    };
+
+    loadReviews();
+  </script>
+</body>
+</html>

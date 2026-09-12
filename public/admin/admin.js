@@ -86,6 +86,8 @@ const AdminAuth = (function () {
       { href: "staff.html", label: "Staff", roles: ["SUPER_ADMIN"] },
       { href: "members.html", label: "Members", roles: ["SUPER_ADMIN"] },
       { href: "payments.html", label: "Payments", roles: ["SUPER_ADMIN"] },
+      { href: "reviews.html", label: "Reviews", roles: ["SUPER_ADMIN", "STAFF"] },
+      { href: "referrals.html", label: "Referrals", roles: ["SUPER_ADMIN", "STAFF"] },
     ];
 
     const navHtml = links

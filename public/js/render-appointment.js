@@ -117,12 +117,22 @@
             guestEmail: document.getElementById("email_address").value,
             guestPhone: document.getElementById("phone_number").value,
             notes: document.getElementById("clinical_notes").value,
+            referredByCode: document.getElementById("referral_code").value.trim().toUpperCase() || undefined,
           }),
         });
 
         if (!res.ok) throw new Error("Request failed — please try again.");
 
-        successBanner.textContent = "Your appointment request has been received. Our team will review it and confirm your slot via the channel you selected.";
+        successBanner.innerHTML = `
+          Your appointment request has been received. Our team will review it and
+          confirm your slot via the channel you selected.
+          <br><br>
+          <strong>Know someone who'd love AuraMed?</strong> Share your referral code
+          and you'll both benefit — they get a warm introduction, and you'll get
+          10% off your next visit once they've had their first confirmed appointment.
+          Ask our team for your personal code next time you're in touch, or check
+          back here after your visit.
+        `;
         successBanner.style.display = "block";
         document.getElementById("appointmentForm").reset();
         submitBtn.textContent = "Request Sent";

@@ -146,6 +146,7 @@ model Booking {
   paymentOption        String?       // PAY_NOW | PAY_LATER
   notificationChannel  String         // "email" | "sms" | "whatsapp" | "app"
   notes               String?        // client-submitted concerns/allergies/goals from the appointment form
+  referredByCode      String?        // referral code entered at booking time, if any
   createdAt           DateTime       @default(now())
   confirmedAt         DateTime?
 
@@ -153,6 +154,8 @@ model Booking {
   treatment  Treatment   @relation(fields: [treatmentId], references: [id])
   specialist Specialist? @relation(fields: [specialistId], references: [id])
   payment    Payment?
+  review     Review?
+  referral   Referral?   // present if this booking was referred by someone else's code
 }
 
 model Order {
@@ -199,4 +202,52 @@ model AdminUser {
   role         String    // SUPER_ADMIN | STAFF
   staffId      String?   // links to Staff record if role = STAFF
   createdAt    DateTime  @default(now())
+}
+
+// One review per booking. Client submits via an unguessable token (no login
+// needed — matches how guest bookings already work). isPublished gates
+// whether it shows on the public site; staff approve via the admin Reviews
+// page before anything goes live, protecting against bad-faith submissions.
+model Review {
+  id          String    @id @default(cuid())
+  bookingId   String    @unique
+  token       String    @unique // used in the public review link — never guessable
+  rating      Int?      // 1-5, null until the client actually submits
+  comment     String?
+  isPublished Boolean   @default(false)
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+}
+
+// Anyone — guest or member — gets a referral code the first time they book,
+// generated automatically. No dependency on the Member/auth system at all,
+// since the client wants guests included, not just registered members.
+model ReferralCode {
+  id         String     @id @default(cuid())
+  code       String     @unique // short, human-shareable, e.g. "SARAH4821"
+  ownerName  String
+  ownerEmail String?
+  ownerPhone String?
+  createdAt  DateTime   @default(now())
+
+  referrals  Referral[]
+}
+
+// Tracks one use of a referral code by a new booking. rewardStatus moves
+// PENDING -> EARNED automatically when the referred booking gets confirmed
+// (see bookings.js), then staff flip it to REDEEMED by hand once they've
+// manually applied the 10% off at the referrer's next booking — matches the
+// client's choice: no automated discount/payment logic needed here.
+model Referral {
+  id               String        @id @default(cuid())
+  referralCodeId   String
+  refereeBookingId String        @unique
+  rewardStatus     String        @default("PENDING") // PENDING | EARNED | REDEEMED
+  createdAt        DateTime      @default(now())
+  redeemedAt       DateTime?
+
+  referralCode     ReferralCode  @relation(fields: [referralCodeId], references: [id])
+  refereeBooking   Booking       @relation(fields: [refereeBookingId], references: [id])
 }

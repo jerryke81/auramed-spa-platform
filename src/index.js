@@ -23,6 +23,8 @@ app.use("/api/staff", require("./routes/staff"));
 app.use("/api/payments", require("./routes/payments"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/uploads", require("./routes/uploads"));
+app.use("/api/reviews", require("./routes/reviews"));
+app.use("/api/referrals", require("./routes/referrals"));
 
 // Basic error handler
 app.use((err, req, res, next) => {
