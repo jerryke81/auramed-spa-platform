@@ -102,6 +102,14 @@ useful for checking seeded data or debugging without writing queries.
 > locally on that same VPS rather than through hPanel's MySQL Databases panel.
 > Steps below are updated accordingly; step 1 (schema/enum notes) still applies
 > as-is.
+>
+> **The step 1 swap has been made directly on the VPS, not in this repo.**
+> The committed `prisma/schema.prisma` datasource block intentionally still
+> says `provider = "sqlite"`, so a fresh clone keeps working with zero-setup
+> local dev — see `prisma/schema.production-reference.prisma` for an exact,
+> documented snapshot of what the datasource block (and the shadow DB URL it
+> needs) actually says on the live server, so a VPS rebuild doesn't have to
+> reconstruct that config from scratch.
 
 1. In `prisma/schema.prisma`, change:
    ```prisma

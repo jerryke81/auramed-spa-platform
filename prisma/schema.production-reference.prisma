@@ -1,0 +1,37 @@
+// ============================================================
+// REFERENCE SNAPSHOT — production's actual datasource config
+// ============================================================
+// This is NOT part of the build and is never loaded by Prisma. It exists
+// purely as a documented record of what the `datasource db { ... }` block
+// in prisma/schema.prisma actually says on the live VPS right now.
+//
+// Why this file exists: the VPS's schema.prisma has this block swapped to
+// MySQL (per README "Moving to MySQL"), but that swap has only ever been
+// made directly on the server — it has never been committed to git. The
+// committed prisma/schema.prisma still says `provider = "sqlite"` on
+// purpose, so that a fresh `git clone` + local dev still works with zero
+// setup (see CLAUDE.md — Local DB: SQLite). Do NOT copy this block over the
+// real datasource block in schema.prisma; that would break local SQLite
+// dev for the next person who pulls.
+//
+// Use this file only as the reference to restore from if the VPS is ever
+// rebuilt from scratch: after cloning the repo there, manually apply the
+// block below to prisma/schema.prisma (and set migration_lock.toml's
+// `provider` to "mysql" — Prisma writes that automatically the next time
+// `prisma migrate dev`/`deploy` runs against it, but it's worth knowing).
+//
+// Last confirmed against the live VPS (168.231.76.58): 2026-09-12.
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+// SHADOW_DATABASE_URL is required because `prisma migrate dev` (which the
+// deploy flow runs directly on the VPS — see REVIEWS_REFERRALS_DEPLOY.md/
+// CLAUDE.md deploy notes) needs a scratch database to compute schema diffs
+// against MySQL. On the VPS this points at a second, empty database
+// (`auramed_spa_shadow` alongside the real `auramed_spa`) on the same local
+// MySQL server. Both DATABASE_URL and SHADOW_DATABASE_URL live in the VPS's
+// /var/www/auramed-spa-platform/.env — not committed, same as any secret.

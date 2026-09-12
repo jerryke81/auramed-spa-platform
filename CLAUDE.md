@@ -17,6 +17,14 @@ Read that file before making architectural changes.
   App Manager plan referenced in README's "Moving to MySQL" section — that
   section is now stale (no hPanel, no auto-managed restarts; PM2 does that
   here) and should be rewritten next time someone touches deploy docs.
+  **Note:** the VPS's `prisma/schema.prisma` has its datasource block swapped
+  to `provider = "mysql"` (plus a `shadowDatabaseUrl`, needed since the deploy
+  flow runs `prisma migrate dev` directly on the server) — but only on the
+  server itself, never committed here, so local dev keeps working against
+  SQLite with zero setup. See `prisma/schema.production-reference.prisma` for
+  an exact, documented copy of that block, so a VPS rebuild has a record to
+  restore from instead of that config only ever existing as an untracked
+  diff on the live server.
 - **Auth:** JWT (`jsonwebtoken`) + bcrypt password hashing
 - **Payments:** PayPal only (client decision — do not add Stripe)
 - **Frontend:** merged into this repo under `public/` — 9 static HTML pages
