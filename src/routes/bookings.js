@@ -39,12 +39,16 @@ router.post("/", async (req, res) => {
 
   // Every booker becomes a potential referrer themselves. Give them a code
   // if they (by email) don't already have one. Guests included, not just
-  // registered members, per the client's decision.
+  // registered members, per the client's decision. Capture whichever code
+  // applies (existing or newly created) so the response can show it to them.
+  let myReferralCode = null;
   const contactEmail = guestEmail || null;
   if (contactEmail) {
     const existing = await prisma.referralCode.findFirst({ where: { ownerEmail: contactEmail } });
-    if (!existing) {
-      await prisma.referralCode.create({
+    if (existing) {
+      myReferralCode = existing.code;
+    } else {
+      const created = await prisma.referralCode.create({
         data: {
           code: generateCode(guestName),
           ownerName: guestName || "Guest",
@@ -52,10 +56,11 @@ router.post("/", async (req, res) => {
           ownerPhone: guestPhone || null,
         },
       });
+      myReferralCode = created.code;
     }
   }
 
-  res.status(201).json(booking);
+  res.status(201).json({ ...booking, myReferralCode });
 });
 
 // GET /api/bookings — Super Admin/Staff, all bookings regardless of status

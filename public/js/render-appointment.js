@@ -122,16 +122,22 @@
         });
 
         if (!res.ok) throw new Error("Request failed — please try again.");
+        const result = await res.json(); // the booking creation response
 
         successBanner.innerHTML = `
           Your appointment request has been received. Our team will review it and
           confirm your slot via the channel you selected.
-          <br><br>
-          <strong>Know someone who'd love AuraMed?</strong> Share your referral code
-          and you'll both benefit — they get a warm introduction, and you'll get
-          10% off your next visit once they've had their first confirmed appointment.
-          Ask our team for your personal code next time you're in touch, or check
-          back here after your visit.
+          ${result.myReferralCode ? `
+            <br><br>
+            <div style="background:#faf5e6; border:1px solid #d4af37; border-radius:8px; padding:1rem; margin-top:0.5rem;">
+              <strong>Know someone who'd love AuraMed?</strong><br>
+              Share your code and you'll get 10% off your next visit once their
+              first appointment is confirmed:
+              <div style="font-size:1.3rem; font-weight:600; letter-spacing:1px; margin-top:0.5rem; color:#1c2b24;">
+                ${result.myReferralCode}
+              </div>
+            </div>
+          ` : ""}
         `;
         successBanner.style.display = "block";
         document.getElementById("appointmentForm").reset();
