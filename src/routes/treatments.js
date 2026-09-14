@@ -66,10 +66,22 @@ router.post("/", requireAuth, requireRole("SUPER_ADMIN"), async (req, res) => {
 
 // PUT /api/treatments/:id — Super Admin only
 router.put("/:id", requireAuth, requireRole("SUPER_ADMIN"), async (req, res) => {
-  const { images, category, ...rest } = req.body;
+  // Pull specialistIds (and bulletinItems, if ever sent) OUT of the body
+  // before spreading the rest into the plain scalar update — neither is a
+  // real column on Treatment, both need their own handling.
+  const { images, category, specialistIds, bulletinItems, ...rest } = req.body;
 
   if (category !== undefined && !VALID_CATEGORIES.includes(category)) {
     return res.status(400).json({ error: `category must be one of ${VALID_CATEGORIES.join(", ")}` });
+  }
+
+  // Replace the specialist link set if the client sent one — same pattern
+  // already used in specialists.js for updating treatmentIds on a specialist.
+  if (specialistIds) {
+    await prisma.treatmentSpecialist.deleteMany({ where: { treatmentId: req.params.id } });
+    await prisma.treatmentSpecialist.createMany({
+      data: specialistIds.map((specialistId) => ({ treatmentId: req.params.id, specialistId })),
+    });
   }
 
   const treatment = await prisma.treatment.update({
