@@ -337,6 +337,33 @@ no framework. Served by Express alongside everything else in `public/`.
   upload endpoint (`POST /api/uploads`) is Super-Admin-only, so members can't
   use it as-is. A member-accessible upload path is a reasonable small
   follow-up, not built here.
+- **`/account/dashboard.html` now shows Upcoming Appointments.**
+  `GET /api/members/me` was extended to include the member's bookings
+  (`treatment`/`specialist` included) alongside their profile — one request
+  loads everything the dashboard needs, rather than a second endpoint. It
+  returns ALL bookings (any status, past and future); the dashboard filters
+  client-side to future + not-`DECLINED`/`CANCELLED` for display, so the
+  full history is already available for a "booking history" view later
+  without another backend change.
+
+## Enquiries
+- **The Contact page form now actually submits somewhere.** It's existed
+  since the original static build with no JS behind it at all
+  (`action="#"`) — `public/js/render-contact.js` wires it to the new
+  `POST /api/enquiries` (public, no auth — same reasoning as guest booking:
+  anyone should be able to reach out). Real fields on that page: `#name`,
+  `#email`, `#interest` (a "Treatment Focus" select), `#message` — there's
+  no phone field. `interest` isn't a column on `Enquiry`; rather than
+  silently dropping it, its selected label is folded into the submitted
+  message text so staff still see it.
+  Same NEW/RESPONDED pattern as other staff-facing queues — admin →
+  Enquiries (`GET /api/enquiries`, `PATCH /api/enquiries/:id/status`, both
+  roles) is a flat follow-up list, not a booking-shaped queue.
+  `Enquiry.message` is a plain `String`, not `@db.Text` — if enquiries turn
+  out to run long in practice, apply the same production-only `@db.Text`
+  treatment used for Treatment/Product/Specialist fields directly on the
+  VPS schema (see `prisma/schema.production-reference.prisma`), don't
+  commit it here.
 
 ## Staff Login & Daily Schedule
 - **A Staff profile and an `AdminUser` login are separate things**, linked

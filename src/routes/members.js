@@ -61,7 +61,18 @@ router.get("/me", requireAuth, requireRole("MEMBER"), async (req, res) => {
     },
   });
   if (!member) return res.status(404).json({ error: "Member not found" });
-  res.json(member);
+
+  // Returns ALL of the member's bookings (past and upcoming, any status) —
+  // the dashboard frontend filters to "upcoming" for display, so the data
+  // is available for a fuller "booking history" view later without needing
+  // another backend change.
+  const bookings = await prisma.booking.findMany({
+    where: { memberId: member.id },
+    include: { treatment: true, specialist: true },
+    orderBy: { requestedDatetime: "desc" },
+  });
+
+  res.json({ ...member, bookings });
 });
 
 // GET /api/members — Super Admin only, view-only list (no edit endpoint per spec)

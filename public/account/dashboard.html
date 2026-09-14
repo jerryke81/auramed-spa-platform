@@ -44,6 +44,11 @@
       <div class="info-row"><span class="info-label">Email</span><span id="email">—</span></div>
     </div>
 
+    <div class="card">
+      <h2 style="font-family:'Playfair Display',serif; font-weight:400; font-size:1.15rem; color:var(--primary); margin-bottom:1rem;">Upcoming Appointments</h2>
+      <div id="upcomingBookings"><p style="color:var(--text-muted); font-size:0.85rem;">Loading...</p></div>
+    </div>
+
     <a href="/appointment.html" class="cta">Book an Appointment</a>
   </div>
 
@@ -51,12 +56,35 @@
   <script>
     MemberAuth.requireAuth();
 
+    function statusBadge(status) {
+      const colors = { PENDING: "#b8862e", CONFIRMED: "#3c7a4f", DECLINED: "#a83c3c", CANCELLED: "#a83c3c" };
+      return `<span style="color:${colors[status] || "#666"}; font-weight:600; font-size:0.78rem;">${status}</span>`;
+    }
+
     (async () => {
       try {
         const me = await MemberAuth.authFetch("/api/members/me");
         document.getElementById("fullName").textContent = `${me.firstName} ${me.lastName}`;
         document.getElementById("email").textContent = me.email;
         document.getElementById("pointsBalance").textContent = me.loyaltyPoints;
+
+        const now = new Date();
+        const upcoming = (me.bookings || [])
+          .filter(b => new Date(b.requestedDatetime) >= now && b.status !== "DECLINED" && b.status !== "CANCELLED")
+          .sort((a, b) => new Date(a.requestedDatetime) - new Date(b.requestedDatetime));
+
+        const container = document.getElementById("upcomingBookings");
+        container.innerHTML = upcoming.length
+          ? upcoming.map(b => `
+              <div class="info-row">
+                <span>
+                  <strong>${b.treatment ? b.treatment.name : "—"}</strong><br>
+                  <span style="color:var(--text-muted); font-size:0.8rem;">${new Date(b.requestedDatetime).toLocaleString()}</span>
+                </span>
+                ${statusBadge(b.status)}
+              </div>
+            `).join("")
+          : `<p style="color:var(--text-muted); font-size:0.85rem;">No upcoming appointments. <a href="/appointment.html" style="color:var(--primary);">Book one</a>?</p>`;
       } catch (err) {
         if (err.message.includes("expired")) window.location.href = "/account/login.html";
       }

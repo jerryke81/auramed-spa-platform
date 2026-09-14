@@ -268,3 +268,20 @@ model LoyaltyTransaction {
 
   member    Member   @relation(fields: [memberId], references: [id])
 }
+
+// The Contact page form, wired up. Public-submittable (no auth), staff-
+// visible for follow-up — same NEW/RESPONDED pattern as Complaints.
+model Enquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  message   String   // plain String, not @db.Text — matches this project's
+                      // SQLite-compatibility convention; if enquiries turn
+                      // out to run long in practice, apply the same
+                      // production-only @db.Text treatment used for
+                      // Treatment/Product/Specialist fields, directly on
+                      // the VPS schema, not committed here.
+  status    String   @default("NEW") // NEW | RESPONDED
+  createdAt DateTime @default(now())
+}

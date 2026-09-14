@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enquiries | AuraMed Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar"></aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1>Enquiries</h1>
+          <p>Messages from the Contact page.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>From</th><th>Message</th><th>Received</th><th>Status</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none">No enquiries yet.</div>
+    </main>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+  <script>
+    AdminAuth.requireAuth(["SUPER_ADMIN", "STAFF"]);
+    AdminAuth.renderSidebar("enquiries.html");
+
+    async function loadEnquiries() {
+      const enquiries = await AdminAuth.authFetch("/api/enquiries");
+      document.getElementById("emptyState").style.display = enquiries.length ? "none" : "block";
+      document.getElementById("rows").innerHTML = enquiries.map((e) => `
+        <tr>
+          <td>${e.name}<br><span style="color:var(--text-muted); font-size:0.78rem;">${e.email}${e.phone ? " · " + e.phone : ""}</span></td>
+          <td style="max-width:320px;">${e.message}</td>
+          <td>${new Date(e.createdAt).toLocaleDateString()}</td>
+          <td>${e.status === "NEW" ? '<span class="badge badge-pending">New</span>' : '<span class="badge badge-confirmed">Responded</span>'}</td>
+          <td>${e.status === "NEW" ? `<button class="btn btn-small" onclick="markResponded('${e.id}')">Mark Responded</button>` : "—"}</td>
+        </tr>
+      `).join("");
+    }
+
+    window.markResponded = async (id) => {
+      await AdminAuth.authFetch(`/api/enquiries/${id}/status`, { method: "PATCH", body: JSON.stringify({ status: "RESPONDED" }) });
+      loadEnquiries();
+    };
+
+    loadEnquiries();
+  </script>
+</body>
+</html>

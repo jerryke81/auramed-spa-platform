@@ -81,6 +81,7 @@ const AdminAuth = (function () {
       { href: "dashboard.html", label: "Dashboard", roles: ["SUPER_ADMIN", "STAFF"] },
       { href: "bookings.html", label: "Booking Queue", roles: ["SUPER_ADMIN", "STAFF"] },
       { href: "schedule.html", label: "Schedule", roles: ["SUPER_ADMIN", "STAFF"] },
+      { href: "enquiries.html", label: "Enquiries", roles: ["SUPER_ADMIN", "STAFF"] },
       { href: "treatments.html", label: "Treatments", roles: ["SUPER_ADMIN"] },
       { href: "specialists.html", label: "Specialists", roles: ["SUPER_ADMIN"] },
       { href: "products.html", label: "Products", roles: ["SUPER_ADMIN"] },
