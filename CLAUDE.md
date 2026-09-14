@@ -392,3 +392,14 @@ no framework. Served by Express alongside everything else in `public/`.
 - Whether guest checkout requires at least email/phone capture before payment
 - Whether members can self-cancel a booking, or must go through staff
 - Logo, real photography assets, and the "Who We Are" page redesign direction
+- **Staff "Remind Client" email + the review-request-email overhaul —
+  deliberately deferred, not forgotten.** There is currently no mailer
+  infrastructure in this codebase at all: no `src/lib/mailer.js`, no mail
+  dependency in `package.json`, only placeholder `SMTP_*` vars in
+  `.env.example`. Review links are still shared by staff copy/pasting
+  manually (see Reviews & Referral Program above) — there's no auto-send
+  anywhere to reuse. A patch instruction assumed this mailer already
+  existed; it doesn't, so the "Remind Client" feature (booking reminder
+  emails) was intentionally left out of that delta rather than building
+  ad hoc mail infrastructure unreviewed. Revisit mailer setup (library,
+  SMTP provider/credentials) and both features together, deliberately.
