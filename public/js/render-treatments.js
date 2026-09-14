@@ -37,8 +37,8 @@
           </div>
           <p class="treatment-description">${t.description}</p>
           <div class="treatment-actions">
-            <a href="appointment.html" class="cta-btn">Book Appointment</a>
-            <a href="procedure-1.html" class="cta-btn outline-btn">View Treatment</a>
+            <a href="appointment.html?treatmentId=${t.id}" class="cta-btn">Book Appointment</a>
+            <a href="treatment-detail.html?id=${t.id}" class="cta-btn outline-btn">View Treatment</a>
           </div>
         </div>
       </article>`;

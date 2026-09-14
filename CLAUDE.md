@@ -25,6 +25,18 @@ Read that file before making architectural changes.
   an exact, documented copy of that block, so a VPS rebuild has a record to
   restore from instead of that config only ever existing as an untracked
   diff on the live server.
+  **Also production-only:** `@db.Text` on seven fields — `Treatment.description`,
+  `Treatment.historyOfProcedure`, `Treatment.patientRequirements`,
+  `Product.description`, `Specialist.academicBackground`,
+  `Specialist.workExperience`, `Booking.notes` — added directly on the VPS's
+  live schema.prisma (same reasoning as the datasource swap: `@db.Text` is
+  MySQL-only and would fail `prisma migrate dev` against local SQLite if
+  committed). Fixes MySQL's default `VARCHAR(191)` silently rejecting/
+  truncating anything past a short paragraph in these fields. See
+  `prisma/schema.production-reference.prisma` for the reference copy —
+  update that file whenever the VPS's real schema.prisma changes, so this
+  divergence stays documented instead of existing only as an untracked
+  server-side diff.
 - **Auth:** JWT (`jsonwebtoken`) + bcrypt password hashing
 - **Payments:** PayPal only (client decision — do not add Stripe)
 - **Frontend:** merged into this repo under `public/` — 9 static HTML pages
@@ -168,14 +180,28 @@ no framework. Served by Express alongside everything else in `public/`.
   admin dashboard. **This replaced real hand-written sample content that was
   previously hardcoded** (actual specialist bios, treatment descriptions) —
   that content needs re-entering through the admin panel if it should stay live.
-- **Not wired — deliberately deferred:** `procedure-1.html` and `suzanne.html`
-  are single-treatment/single-specialist *templates* with bespoke marketing
-  sections (a "Pathway Architecture" framework, day-by-day patient timelines,
-  long narrative bios) that don't map onto the current schema. Converting
-  these needs a content decision first — either add schema fields to capture
-  that structure, or accept losing it — not a decision to make unilaterally
-  in code. All "View Treatment"/specialist name links currently point to
-  these same static templates regardless of which item was clicked.
+- **Real per-treatment detail pages now exist** at
+  `treatment-detail.html?id=<treatmentId>` (fetches `GET /api/treatments/:id`
+  directly) — this replaces the old static `procedure-1.html`, which every
+  "View Treatment" link pointed to regardless of which treatment was
+  clicked, showing the same generic content every time.
+  `treatments.html`'s "View Treatment" and "Book Appointment" links
+  (`public/js/render-treatments.js`) now pass the actual treatment id to
+  `treatment-detail.html` and `appointment.html` respectively.
+  `appointment.html?treatmentId=<id>` now respects that pre-selected
+  treatment (`public/js/render-appointment.js` checks the URL param before
+  falling back to "pick the first treatment in the list", preserving
+  direct-visit behavior for anyone landing on the page with no param).
+  `procedure-1.html` itself is unused now, not deleted — left in place in
+  case it's wanted as a design reference, worth a cleanup pass eventually.
+- **`suzanne.html` is still not wired — deliberately deferred:** it's a
+  single-specialist *template* with bespoke marketing sections (a "Pathway
+  Architecture" framework, day-by-day patient timelines, long narrative
+  bios) that don't map onto the current schema. Converting it needs a
+  content decision first — either add schema fields to capture that
+  structure, or accept losing it — not a decision to make unilaterally in
+  code. All specialist name links currently point to this same static
+  template regardless of which specialist was clicked.
 - **Fields dropped in the transition** (present in the old static markup,
   not in the schema): treatment "Downtime", product "Skin Type", specialist
   short job title (e.g. "Chief Executive Officer" — using `workExperience`

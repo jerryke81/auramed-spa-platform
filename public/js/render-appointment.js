@@ -22,9 +22,16 @@
       return;
     }
 
+    // Respect a treatment chosen before arriving here (e.g. clicking
+    // "Book Appointment" on a specific treatment card or detail page).
+    // Falls back to the first treatment if the id isn't found or wasn't given.
+    const preselectedId = new URLSearchParams(window.location.search).get("treatmentId");
+    const preselectedIndex = preselectedId ? treatments.findIndex(t => t.id === preselectedId) : -1;
+    const initialIndex = preselectedIndex >= 0 ? preselectedIndex : 0;
+
     grid.innerHTML = treatments.map((t, i) => `
-      <div class="selection-card${i === 0 ? " active" : ""}" data-treatment-id="${t.id}" style="cursor:pointer;">
-        <input type="radio" name="treatment_choice" id="t_${t.id}" ${i === 0 ? "checked" : ""} style="pointer-events:none;">
+      <div class="selection-card${i === initialIndex ? " active" : ""}" data-treatment-id="${t.id}" style="cursor:pointer;">
+        <input type="radio" name="treatment_choice" id="t_${t.id}" ${i === initialIndex ? "checked" : ""} style="pointer-events:none;">
         <div class="card-content">
           <span class="title">${t.name}</span>
           <span class="meta">$${t.costUsd} • ${t.durationValue} ${t.durationUnit.toLowerCase()}</span>
@@ -44,8 +51,15 @@
       });
     });
 
-    selectedTreatment = treatments[0];
+    selectedTreatment = treatments[initialIndex];
     updateSummary();
+
+    // If the treatment came pre-selected, scroll it into view so the client
+    // actually sees which one is highlighted, rather than trusting they'll
+    // notice a selected card somewhere in a long list.
+    if (preselectedIndex >= 0) {
+      grid.children[preselectedIndex].scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   }
 
   function updateSummary() {
