@@ -194,14 +194,24 @@ no framework. Served by Express alongside everything else in `public/`.
   direct-visit behavior for anyone landing on the page with no param).
   `procedure-1.html` itself is unused now, not deleted — left in place in
   case it's wanted as a design reference, worth a cleanup pass eventually.
-- **`suzanne.html` is still not wired — deliberately deferred:** it's a
-  single-specialist *template* with bespoke marketing sections (a "Pathway
+- **Real per-specialist detail pages now exist** at
+  `specialist-detail.html?id=<specialistId>` (fetches `GET /api/specialists/:id`
+  directly, which already included `treatments` — no backend change needed)
+  — replaces the old static `suzanne.html`, which every specialist name link
+  pointed to regardless of who was clicked. `suzanne.html` itself is unused
+  now, not deleted, same as `procedure-1.html` above.
+  `render-team.js`'s specialist cards now link to
+  `specialist-detail.html?id=<id>` and truncate `academicBackground`/
+  `workExperience` on the card (60/140 chars) so a long bio (now possible
+  since `TEXT_LENGTH_FIX.md` expanded those fields) doesn't blow out every
+  card on the listing — the detail page always shows the full untruncated
+  text.
+  **Note:** `suzanne.html`'s original bespoke marketing sections (a "Pathway
   Architecture" framework, day-by-day patient timelines, long narrative
-  bios) that don't map onto the current schema. Converting it needs a
-  content decision first — either add schema fields to capture that
-  structure, or accept losing it — not a decision to make unilaterally in
-  code. All specialist name links currently point to this same static
-  template regardless of which specialist was clicked.
+  bios) still don't map onto the current schema — `specialist-detail.html`
+  covers photo/academic background/experience/treatments offered, not that
+  richer layout. Adding it back needs a content decision first (new schema
+  fields, or accept losing it), same reasoning as the dropped fields below.
 - **Fields dropped in the transition** (present in the old static markup,
   not in the schema): treatment "Downtime", product "Skin Type", specialist
   short job title (e.g. "Chief Executive Officer" — using `workExperience`

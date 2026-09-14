@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Specialist | AuraMed Spa & Wellness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1c2b24; --accent: #d4af37; --bg-sand: #faf8f5;
+      --text-dark: #222222; --text-muted: #666666; --border: rgba(28,43,36,0.1);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg-sand); color:var(--text-dark); }
+    .top-nav { padding:1.5rem 4rem; display:flex; justify-content:space-between; align-items:center; }
+    .top-nav a.back { color:var(--primary); text-decoration:none; font-size:0.9rem; }
+    .top-nav .brand { font-family:'Playfair Display',serif; font-size:1.3rem; letter-spacing:1px; color:var(--primary); }
+    .content { max-width:820px; margin:0 auto; padding:1rem 2rem 5rem; }
+    .profile-header { display:flex; gap:2rem; align-items:center; margin-bottom:2.5rem; }
+    .profile-header img { width:150px; height:150px; border-radius:50%; object-fit:cover; }
+    h1 { font-family:'Playfair Display',serif; font-weight:400; font-size:2.2rem; color:var(--primary); }
+    .specializes-tags { display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.75rem; }
+    .tag-chip { background:#fff; border:1px solid var(--accent); color:var(--accent); border-radius:20px; padding:0.25rem 0.9rem; font-size:0.78rem; }
+    .section { margin-bottom:2.5rem; }
+    .section h2 { font-family:'Playfair Display',serif; font-weight:400; font-size:1.3rem; color:var(--primary); margin-bottom:0.85rem; }
+    .section p { line-height:1.75; color:var(--text-dark); white-space:pre-wrap; }
+    .treatments-list { display:flex; flex-direction:column; gap:0.75rem; }
+    .treatment-row { display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid var(--border); border-radius:8px; padding:0.9rem 1.2rem; text-decoration:none; color:inherit; }
+    .treatment-row:hover { border-color:var(--accent); }
+    .cta-strip { text-align:center; padding-top:1.5rem; }
+    .cta-btn { display:inline-block; background:var(--primary); color:#fff; padding:1rem 2.5rem; border-radius:4px; text-decoration:none; font-size:0.95rem; letter-spacing:0.5px; }
+    .msg { text-align:center; padding:5rem 2rem; color:var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <a href="team.html" class="back">← Our Team</a>
+    <span class="brand">AURAMED</span>
+  </div>
+
+  <div id="container">
+    <div class="msg">Loading...</div>
+  </div>
+
+  <script>
+    const specialistId = new URLSearchParams(window.location.search).get("id");
+    const container = document.getElementById("container");
+
+    function render(s) {
+      document.title = `${s.name} | AuraMed Spa & Wellness`;
+      container.innerHTML = `
+        <div class="content">
+          <div class="profile-header">
+            <img src="${s.photoUrl}" alt="${s.name}" onerror="this.style.visibility='hidden'">
+            <div>
+              <h1>${s.name}</h1>
+              ${s.treatments && s.treatments.length ? `
+                <div class="specializes-tags">
+                  ${s.treatments.map(t => `<span class="tag-chip">${t.treatment.category}</span>`).join("")}
+                </div>` : ""}
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Academic Background</h2>
+            <p>${s.academicBackground}</p>
+          </div>
+
+          <div class="section">
+            <h2>Experience</h2>
+            <p>${s.workExperience}</p>
+          </div>
+
+          ${s.treatments && s.treatments.length ? `
+            <div class="section">
+              <h2>Treatments Offered</h2>
+              <div class="treatments-list">
+                ${s.treatments.map(t => `
+                  <a href="treatment-detail.html?id=${t.treatment.id}" class="treatment-row">
+                    <span>${t.treatment.name}</span>
+                    <span style="color:var(--text-muted); font-size:0.85rem;">$${t.treatment.costUsd}</span>
+                  </a>
+                `).join("")}
+              </div>
+            </div>` : ""}
+
+          <div class="cta-strip">
+            <a href="appointment.html" class="cta-btn">Book an Appointment</a>
+          </div>
+        </div>
+      `;
+    }
+
+    (async () => {
+      if (!specialistId) {
+        container.innerHTML = `<div class="msg">No specialist specified. <a href="team.html">Meet our team</a>.</div>`;
+        return;
+      }
+      try {
+        const res = await fetch(`/api/specialists/${specialistId}`);
+        if (!res.ok) throw new Error("Specialist not found");
+        const specialist = await res.json();
+        render(specialist);
+      } catch (err) {
+        container.innerHTML = `<div class="msg">Couldn't load this profile. <a href="team.html">Meet our team</a>.</div>`;
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -7,12 +7,22 @@
  * would need adding to the schema + admin form if the client wants the exact
  * short-title format back.
  *
- * Specialist detail links point to suzanne.html for all cards for now — that
- * page is still a static single-specialist template, not yet wired to show
- * the specific specialist clicked (see the procedure-1.html/suzanne.html
- * note in chat: deferred, needs a content decision first).
+ * Specialist detail links go to specialist-detail.html?id=<id>, which shows
+ * the FULL untruncated bio for that specific specialist — replaces the old
+ * static suzanne.html that every card linked to regardless of which
+ * specialist was clicked.
  */
 (function () {
+  // academicBackground/workExperience can now be a full paragraph each
+  // (see TEXT_LENGTH_FIX.md) — truncate on the listing card so a long bio
+  // doesn't blow out every card to match its height. The full text is
+  // never lost, just not all shown here; specialist-detail.html shows it in
+  // full.
+  function truncate(text, maxLength) {
+    if (!text || text.length <= maxLength) return text || "";
+    return text.slice(0, maxLength).trim() + "…";
+  }
+
   function cardHtml(s) {
     return `
       <div class="member-card">
@@ -20,9 +30,9 @@
           <img src="${s.photoUrl}" alt="${s.name}" onerror="this.style.opacity=0.15">
         </div>
         <div class="member-meta">
-          <h2><a href="suzanne.html">${s.name}</a></h2>
-          <span class="member-title">${s.academicBackground}</span>
-          <p class="member-bio">${s.workExperience}</p>
+          <h2><a href="specialist-detail.html?id=${s.id}">${s.name}</a></h2>
+          <span class="member-title">${truncate(s.academicBackground, 60)}</span>
+          <p class="member-bio">${truncate(s.workExperience, 140)}</p>
         </div>
       </div>`;
   }
