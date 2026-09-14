@@ -1,26 +1,43 @@
 // ============================================================
-// REFERENCE SNAPSHOT — production's actual datasource config
+// REFERENCE SNAPSHOT — production's actual schema.prisma
 // ============================================================
 // This is NOT part of the build and is never loaded by Prisma. It exists
-// purely as a documented record of what the `datasource db { ... }` block
-// in prisma/schema.prisma actually says on the live VPS right now.
+// purely as a documented, full record of what the LIVE prisma/schema.prisma
+// on the VPS (168.231.76.58) actually says right now — every model, exactly
+// as committed here, PLUS the production-only diffs below that have only
+// ever been applied directly on the server and never committed as the real
+// schema.prisma:
 //
-// Why this file exists: the VPS's schema.prisma has this block swapped to
-// MySQL (per README "Moving to MySQL"), but that swap has only ever been
-// made directly on the server — it has never been committed to git. The
-// committed prisma/schema.prisma still says `provider = "sqlite"` on
-// purpose, so that a fresh `git clone` + local dev still works with zero
-// setup (see CLAUDE.md — Local DB: SQLite). Do NOT copy this block over the
-// real datasource block in schema.prisma; that would break local SQLite
-// dev for the next person who pulls.
+//   1. The `datasource db` block is swapped to MySQL, with a
+//      `shadowDatabaseUrl` (needed because the deploy flow runs
+//      `prisma migrate dev` directly on the server, which needs a scratch
+//      database to compute schema diffs against MySQL).
+//   2. `@db.Text` on seven fields that would otherwise default to MySQL's
+//      `VARCHAR(191)` and silently reject/truncate anything past a short
+//      paragraph: Treatment.description, Treatment.historyOfProcedure,
+//      Treatment.patientRequirements, Product.description,
+//      Specialist.academicBackground, Specialist.workExperience,
+//      Booking.notes.
 //
-// Use this file only as the reference to restore from if the VPS is ever
+// Why this can't just be committed as the real schema.prisma: both the
+// MySQL provider line and `@db.Text` are validated against the ACTIVE
+// datasource provider. Local dev runs on SQLite (zero-setup, established
+// since the very first scaffold) and neither of these is valid there —
+// committing either would break `npx prisma migrate dev` for anyone
+// cloning fresh and running local dev (see CLAUDE.md — Local DB: SQLite).
+//
+// Do NOT copy this file over the real prisma/schema.prisma used for local
+// dev — use it only as the reference to restore from if the VPS is ever
 // rebuilt from scratch: after cloning the repo there, manually apply the
-// block below to prisma/schema.prisma (and set migration_lock.toml's
-// `provider` to "mysql" — Prisma writes that automatically the next time
-// `prisma migrate dev`/`deploy` runs against it, but it's worth knowing).
+// datasource block and the `@db.Text` annotations below to schema.prisma,
+// then run `prisma migrate dev` on the server (which will also write
+// migration_lock.toml's `provider` to "mysql" automatically).
 //
-// Last confirmed against the live VPS (168.231.76.58): 2026-09-12.
+// DATABASE_URL and SHADOW_DATABASE_URL live in the VPS's
+// /var/www/auramed-spa-platform/.env — not committed, same as any secret.
+//
+// Last confirmed against the live VPS: 2026-09-14 (added @db.Text — see
+// TEXT_LENGTH_FIX.md in that delta's deploy notes).
 
 datasource db {
   provider          = "mysql"
@@ -28,10 +45,253 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-// SHADOW_DATABASE_URL is required because `prisma migrate dev` (which the
-// deploy flow runs directly on the VPS — see REVIEWS_REFERRALS_DEPLOY.md/
-// CLAUDE.md deploy notes) needs a scratch database to compute schema diffs
-// against MySQL. On the VPS this points at a second, empty database
-// (`auramed_spa_shadow` alongside the real `auramed_spa`) on the same local
-// MySQL server. Both DATABASE_URL and SHADOW_DATABASE_URL live in the VPS's
-// /var/www/auramed-spa-platform/.env — not committed, same as any secret.
+generator client {
+  provider = "prisma-client-js"
+}
+
+// SQLite (local dev) does not support enums in Prisma, so the committed
+// schema.prisma types these fields `String` with the allowed values
+// documented inline instead (see the commented enum blocks there). MySQL
+// in production could use real enums, but the live schema.prisma has been
+// left matching the committed `String` shape rather than diverging on this
+// axis too — only the datasource block and the `@db.Text` annotations below
+// differ from git.
+
+model Treatment {
+  id                  String   @id @default(cuid())
+  name                String
+  images              String   // JSON array of image paths
+  category             String   // FACE | SKIN | BODY | WELLNESS
+  durationValue        Int
+  durationUnit         String   // MINUTES | HOURS | DAYS
+  description          String   @db.Text
+  costUsd              Float
+  historyOfProcedure   String?  @db.Text
+  patientRequirements  String?  @db.Text
+  isPublished          Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  specialists   TreatmentSpecialist[]
+  bulletinItems TreatmentBulletinItem[]
+  bookings      Booking[]
+}
+
+model Specialist {
+  id                 String   @id @default(cuid())
+  name               String
+  photoUrl           String   // required per client
+  academicBackground String   @db.Text
+  workExperience     String   @db.Text
+  createdAt          DateTime @default(now())
+
+  treatments TreatmentSpecialist[]
+  bookings   Booking[]
+}
+
+model TreatmentSpecialist {
+  treatmentId  String
+  specialistId String
+  treatment    Treatment  @relation(fields: [treatmentId], references: [id])
+  specialist   Specialist @relation(fields: [specialistId], references: [id])
+
+  @@id([treatmentId, specialistId])
+}
+
+model TreatmentBulletinItem {
+  id          String   @id @default(cuid())
+  treatmentId String
+  item        String
+  procedure   String
+  order       Int      @default(0)
+  treatment   Treatment @relation(fields: [treatmentId], references: [id])
+}
+
+model Product {
+  id          String     @id @default(cuid())
+  name        String
+  images      String     // JSON array of image paths
+  category    String
+  weightValue Float
+  weightUnit  String     // KG | LITER | GRAMS
+  description String     @db.Text
+  priceUsd    Float
+  createdAt   DateTime   @default(now())
+
+  orderItems OrderItem[]
+}
+
+model Staff {
+  id        String   @id @default(cuid())
+  name      String
+  position  String
+  dob       DateTime
+  createdAt DateTime @default(now())
+}
+
+model Member {
+  id                            String   @id @default(cuid())
+  firstName                     String
+  middleName                    String?
+  lastName                      String
+  gender                        String
+  dob                           DateTime
+  nationality                   String
+  profilePhotoUrl               String?
+  mobile                        String
+  email                         String   @unique
+  physicalAddress               String
+  passwordHash                  String
+  healthConditions              String   // JSON array
+  interestedServices            String   // JSON array
+  emergencyContactName          String
+  emergencyContactRelationship  String
+  emergencyContactPhone         String
+  membershipTier                String   // SILVER | GOLD | PLATINUM | VIP | NOT_SURE
+  marketingOptIn                Boolean
+  agreedToTerms                 Boolean
+  loyaltyPoints                 Int      @default(0)
+  createdAt                     DateTime @default(now())
+
+  bookings            Booking[]
+  orders              Order[]
+  loyaltyTransactions LoyaltyTransaction[]
+}
+
+// Booking = request-and-confirm model (see spec §4.9)
+// Client requests a treatment + preferred date/time -> pending queue ->
+// staff assigns a specialist and confirms/declines -> staff picks pay-now
+// vs pay-later -> client notified on the channel they used to request.
+model Booking {
+  id                  String         @id @default(cuid())
+  memberId            String?
+  guestName           String?
+  guestEmail          String?
+  guestPhone          String?
+  treatmentId         String
+  specialistId        String?        // null until staff assigns
+  requestedDatetime    DateTime
+  status              String         @default("PENDING") // PENDING | CONFIRMED | DECLINED | CANCELLED
+  paymentOption        String?       // PAY_NOW | PAY_LATER
+  notificationChannel  String         // "email" | "sms" | "whatsapp" | "app"
+  notes               String?        @db.Text // client-submitted concerns/allergies/goals from the appointment form
+  referredByCode      String?        // referral code entered at booking time, if any
+  createdAt           DateTime       @default(now())
+  confirmedAt         DateTime?
+
+  member     Member?     @relation(fields: [memberId], references: [id])
+  treatment  Treatment   @relation(fields: [treatmentId], references: [id])
+  specialist Specialist? @relation(fields: [specialistId], references: [id])
+  payment    Payment?
+  review     Review?
+  referral   Referral?   // present if this booking was referred by someone else's code
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  cartToken String?     // persistent guest cart token (cookie-based)
+  memberId  String?
+  status    String      @default("pending")
+  createdAt DateTime    @default(now())
+
+  member  Member?     @relation(fields: [memberId], references: [id])
+  items   OrderItem[]
+  payment Payment?
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  bookingId   String?       @unique
+  orderId     String?       @unique
+  amountUsd   Float
+  status      String        @default("PENDING") // PENDING | PAID
+  provider    String        @default("paypal")
+  providerRef String?
+  createdAt   DateTime      @default(now())
+
+  booking Booking? @relation(fields: [bookingId], references: [id])
+  order   Order?   @relation(fields: [orderId], references: [id])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         String    // SUPER_ADMIN | STAFF
+  staffId      String?   // links to Staff record if role = STAFF
+  createdAt    DateTime  @default(now())
+}
+
+// One review per booking. Client submits via an unguessable token (no login
+// needed — matches how guest bookings already work). isPublished gates
+// whether it shows on the public site; staff approve via the admin Reviews
+// page before anything goes live, protecting against bad-faith submissions.
+model Review {
+  id          String    @id @default(cuid())
+  bookingId   String    @unique
+  token       String    @unique // used in the public review link — never guessable
+  rating      Int?      // 1-5, null until the client actually submits
+  comment     String?
+  isPublished Boolean   @default(false)
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+}
+
+// Anyone — guest or member — gets a referral code the first time they book,
+// generated automatically. No dependency on the Member/auth system at all,
+// since the client wants guests included, not just registered members.
+model ReferralCode {
+  id         String     @id @default(cuid())
+  code       String     @unique // short, human-shareable, e.g. "SARAH4821"
+  ownerName  String
+  ownerEmail String?
+  ownerPhone String?
+  createdAt  DateTime   @default(now())
+
+  referrals  Referral[]
+}
+
+// Tracks one use of a referral code by a new booking. rewardStatus moves
+// PENDING -> EARNED automatically when the referred booking gets confirmed
+// (see bookings.js), then staff flip it to REDEEMED by hand once they've
+// manually applied the 10% off at the referrer's next booking — matches the
+// client's choice: no automated discount/payment logic needed here.
+model Referral {
+  id               String        @id @default(cuid())
+  referralCodeId   String
+  refereeBookingId String        @unique
+  rewardStatus     String        @default("PENDING") // PENDING | EARNED | REDEEMED
+  createdAt        DateTime      @default(now())
+  redeemedAt       DateTime?
+
+  referralCode     ReferralCode  @relation(fields: [referralCodeId], references: [id])
+  refereeBooking   Booking       @relation(fields: [refereeBookingId], references: [id])
+}
+
+// A running ledger of every point movement — earn (positive) or redeem
+// (negative) — so there's always an audit trail, not just a running total.
+// Member.loyaltyPoints is a denormalized cache of the sum, kept in sync
+// whenever a transaction is created (see loyalty.js and the bookings.js
+// confirm-handler patch).
+model LoyaltyTransaction {
+  id        String   @id @default(cuid())
+  memberId  String
+  points    Int      // positive = earned, negative = redeemed
+  reason    String   // e.g. "Visit: Hydrafacial" or "Redeemed — $15 off (staff: Jane)"
+  createdAt DateTime @default(now())
+
+  member    Member   @relation(fields: [memberId], references: [id])
+}
