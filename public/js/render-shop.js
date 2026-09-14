@@ -29,7 +29,7 @@
           <div class="product-price">$${p.priceUsd}</div>
           <div class="product-actions">
             <a href="#" class="cta-btn" onclick="addToCart('${p.id}'); return false;">Add to Cart</a>
-            <a href="#" class="cta-btn outline-btn">View Details</a>
+            <a href="product-detail.html?id=${p.id}" class="cta-btn outline-btn">View Details</a>
           </div>
         </div>
       </article>`;

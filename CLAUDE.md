@@ -212,6 +212,15 @@ no framework. Served by Express alongside everything else in `public/`.
   covers photo/academic background/experience/treatments offered, not that
   richer layout. Adding it back needs a content decision first (new schema
   fields, or accept losing it), same reasoning as the dropped fields below.
+- **Real per-product detail pages now exist** at
+  `product-detail.html?id=<productId>` (fetches `GET /api/products/:id`
+  directly — already existed, no backend change needed) — replaces the old
+  "View Details" link on `shop.html`, which was a literal dead `href="#"`
+  (clicked and did nothing at all, not even a wrong page).
+  `render-shop.js`'s "View Details" link now passes the actual product id;
+  the detail page shows the product's full description/price/volume and a
+  working "Add to Cart" button using the same
+  `POST /api/products/cart/add` endpoint the shop grid already calls.
 - **Fields dropped in the transition** (present in the old static markup,
   not in the schema): treatment "Downtime", product "Skin Type", specialist
   short job title (e.g. "Chief Executive Officer" — using `workExperience`

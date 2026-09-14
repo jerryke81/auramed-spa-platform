@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product | AuraMed Spa & Wellness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1c2b24; --accent: #d4af37; --bg-sand: #faf8f5;
+      --text-dark: #222222; --text-muted: #666666; --border: rgba(28,43,36,0.1);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg-sand); color:var(--text-dark); }
+    .top-nav { padding:1.5rem 4rem; display:flex; justify-content:space-between; align-items:center; }
+    .top-nav a.back { color:var(--primary); text-decoration:none; font-size:0.9rem; }
+    .top-nav .brand { font-family:'Playfair Display',serif; font-size:1.3rem; letter-spacing:1px; color:var(--primary); }
+    .layout { max-width:960px; margin:0 auto; padding:1rem 2rem 5rem; display:grid; grid-template-columns:1fr 1fr; gap:3rem; }
+    .layout img { width:100%; border-radius:10px; object-fit:cover; aspect-ratio:1/1; }
+    .tag { color:var(--accent); text-transform:uppercase; letter-spacing:2px; font-size:0.75rem; font-weight:500; }
+    h1 { font-family:'Playfair Display',serif; font-weight:400; font-size:2rem; color:var(--primary); margin:0.5rem 0 1rem; }
+    .price { font-size:1.5rem; color:var(--primary); font-family:'Playfair Display',serif; margin-bottom:1rem; }
+    .volume { color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem; }
+    .description { line-height:1.75; margin-bottom:2rem; white-space:pre-wrap; }
+    .cta-btn { display:inline-block; background:var(--primary); color:#fff; padding:1rem 2.5rem; border-radius:4px; border:none; font-size:0.95rem; letter-spacing:0.5px; cursor:pointer; }
+    .msg { text-align:center; padding:5rem 2rem; color:var(--text-muted); }
+    @media (max-width: 700px) { .layout { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <a href="shop.html" class="back">← Shop</a>
+    <span class="brand">AURAMED</span>
+  </div>
+
+  <div id="container">
+    <div class="msg">Loading...</div>
+  </div>
+
+  <script>
+    const productId = new URLSearchParams(window.location.search).get("id");
+    const container = document.getElementById("container");
+
+    function firstImage(images) {
+      try { return JSON.parse(images || "[]")[0] || "/images/gallery/img-001-14885905-w600.jpg"; }
+      catch (e) { return "/images/gallery/img-001-14885905-w600.jpg"; }
+    }
+
+    function render(p) {
+      document.title = `${p.name} | AuraMed Spa & Wellness`;
+      container.innerHTML = `
+        <div class="layout">
+          <img src="${firstImage(p.images)}" alt="${p.name}">
+          <div>
+            <span class="tag">${p.category}</span>
+            <h1>${p.name}</h1>
+            <div class="price">$${p.priceUsd}</div>
+            <div class="volume">${p.weightValue}${p.weightUnit.toLowerCase()}</div>
+            <p class="description">${p.description}</p>
+            <button class="cta-btn" id="addToCartBtn">Add to Cart</button>
+          </div>
+        </div>
+      `;
+      document.getElementById("addToCartBtn").addEventListener("click", async () => {
+        const btn = document.getElementById("addToCartBtn");
+        btn.disabled = true;
+        btn.textContent = "Adding...";
+        try {
+          await fetch("/api/products/cart/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ productId: p.id, quantity: 1 }),
+          });
+          btn.textContent = "Added ✓";
+        } catch (err) {
+          btn.textContent = "Couldn't add — try again";
+          btn.disabled = false;
+        }
+      });
+    }
+
+    (async () => {
+      if (!productId) {
+        container.innerHTML = `<div class="msg">No product specified. <a href="shop.html">Browse the shop</a>.</div>`;
+        return;
+      }
+      try {
+        const res = await fetch(`/api/products/${productId}`);
+        if (!res.ok) throw new Error("Product not found");
+        const product = await res.json();
+        render(product);
+      } catch (err) {
+        container.innerHTML = `<div class="msg">Couldn't load this product. <a href="shop.html">Browse the shop</a>.</div>`;
+      }
+    })();
+  </script>
+</body>
+</html>
