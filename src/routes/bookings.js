@@ -4,6 +4,7 @@ const prisma = require("../lib/prisma");
 const { requireAuth, requireRole } = require("../middleware/auth");
 const { generateCode } = require("./referrals");
 const { POINTS_PER_VISIT } = require("./loyalty");
+const { MEMBER_QUEUE_FIELDS } = require("../lib/memberFields");
 
 const router = express.Router();
 
@@ -67,7 +68,7 @@ router.post("/", async (req, res) => {
 // GET /api/bookings — Super Admin/Staff, all bookings regardless of status
 router.get("/", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), async (req, res) => {
   const bookings = await prisma.booking.findMany({
-    include: { treatment: true, member: true, specialist: true },
+    include: { treatment: true, member: { select: MEMBER_QUEUE_FIELDS }, specialist: true },
     orderBy: { createdAt: "desc" },
   });
   res.json(bookings);
@@ -77,7 +78,7 @@ router.get("/", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), async (req, re
 router.get("/pending", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), async (req, res) => {
   const bookings = await prisma.booking.findMany({
     where: { status: "PENDING" },
-    include: { treatment: true, member: true },
+    include: { treatment: true, member: { select: MEMBER_QUEUE_FIELDS } },
     orderBy: { createdAt: "asc" },
   });
   res.json(bookings);
@@ -108,10 +109,15 @@ router.patch("/:id/assign", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), as
 // PATCH /api/bookings/:id/confirm — staff confirms, choosing pay-now or pay-later
 router.patch("/:id/confirm", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), async (req, res) => {
   const { paymentOption } = req.body; // "PAY_NOW" | "PAY_LATER"
-  const booking = await prisma.booking.update({
-    where: { id: req.params.id },
+  // Atomic and idempotent: only the request that flips the booking to
+  // CONFIRMED runs the side effects below (referral, review link, points).
+  const { count } = await prisma.booking.updateMany({
+    where: { id: req.params.id, status: { not: "CONFIRMED" } },
     data: { status: "CONFIRMED", paymentOption, confirmedAt: new Date() },
   });
+  const booking = await prisma.booking.findUnique({ where: { id: req.params.id } });
+  if (!booking) return res.status(404).json({ error: "Not found" });
+  if (count === 0) return res.json(booking); // already confirmed, nothing to redo
 
   // If this booking used a referral code, the referrer just earned their reward
   const referral = await prisma.referral.findUnique({ where: { refereeBookingId: booking.id } });

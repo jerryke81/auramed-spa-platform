@@ -1,6 +1,7 @@
 const express = require("express");
 const prisma = require("../lib/prisma");
 const { requireAuth, requireRole } = require("../middleware/auth");
+const { MEMBER_QUEUE_FIELDS } = require("../lib/memberFields");
 
 const router = express.Router();
 
@@ -27,7 +28,7 @@ router.get("/", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), async (req, re
           requestedDatetime: { gte: dayStart, lte: dayEnd },
           status: { not: "CANCELLED" },
         },
-        include: { treatment: true, member: true },
+        include: { treatment: true, member: { select: MEMBER_QUEUE_FIELDS } },
         orderBy: { requestedDatetime: "asc" },
       });
       return { specialist: { id: specialist.id, name: specialist.name, photoUrl: specialist.photoUrl }, bookings };
@@ -40,7 +41,7 @@ router.get("/", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), async (req, re
       requestedDatetime: { gte: dayStart, lte: dayEnd },
       status: { not: "CANCELLED" },
     },
-    include: { treatment: true, member: true },
+    include: { treatment: true, member: { select: MEMBER_QUEUE_FIELDS } },
     orderBy: { requestedDatetime: "asc" },
   });
 

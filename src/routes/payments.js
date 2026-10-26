@@ -6,7 +6,7 @@ const router = express.Router();
 
 // POST /api/payments/create — creates a pending Payment record for a booking or order
 // Actual PayPal order creation (calling PayPal's Orders API) plugs in here.
-router.post("/create", async (req, res) => {
+router.post("/create", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), async (req, res) => {
   const { bookingId, orderId, amountUsd } = req.body;
   const payment = await prisma.payment.create({
     data: { bookingId, orderId, amountUsd, provider: "paypal" },
@@ -18,7 +18,7 @@ router.post("/create", async (req, res) => {
 
 // POST /api/payments/:id/capture — called after PayPal approval to mark as paid
 // This is where you'd call PayPal's "capture" endpoint and verify the response.
-router.post("/:id/capture", async (req, res) => {
+router.post("/:id/capture", requireAuth, requireRole("SUPER_ADMIN", "STAFF"), async (req, res) => {
   const { providerRef } = req.body;
   const payment = await prisma.payment.update({
     where: { id: req.params.id },
