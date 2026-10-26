@@ -1,10 +1,12 @@
 // Prisma schema — Spa Platform
-// Local dev: SQLite (zero setup). Swap provider to "mysql" + a real DATABASE_URL
-// when you're ready to deploy the backend (see README "Moving to MySQL").
+// MySQL everywhere (the migrations in prisma/migrations are MySQL). Set DATABASE_URL
+// and SHADOW_DATABASE_URL (needed by `migrate dev`) in .env. The old SQLite setup
+// is retired; its migrations are archived in prisma/_archived-sqlite-migrations.
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 generator client {
@@ -37,10 +39,10 @@ model Treatment {
   category             String   // FACE | SKIN | BODY | WELLNESS
   durationValue        Int
   durationUnit         String   // MINUTES | HOURS | DAYS
-  description          String
+  description          String   @db.Text
   costUsd              Float
-  historyOfProcedure   String?
-  patientRequirements  String?
+  historyOfProcedure   String?  @db.Text
+  patientRequirements  String?  @db.Text
   isPublished          Boolean  @default(false)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -54,8 +56,8 @@ model Specialist {
   id                 String   @id @default(cuid())
   name               String
   photoUrl           String   // required per client
-  academicBackground String
-  workExperience     String
+  academicBackground String   @db.Text
+  workExperience     String   @db.Text
   createdAt          DateTime @default(now())
 
   treatments TreatmentSpecialist[]
@@ -87,7 +89,7 @@ model Product {
   category    String
   weightValue Float
   weightUnit  String     // KG | LITER | GRAMS
-  description String
+  description String     @db.Text
   priceUsd    Float
   createdAt   DateTime   @default(now())
 
@@ -147,7 +149,7 @@ model Booking {
   status              String         @default("PENDING") // PENDING | CONFIRMED | DECLINED | CANCELLED
   paymentOption        String?       // PAY_NOW | PAY_LATER
   notificationChannel  String         // "email" | "sms" | "whatsapp" | "app"
-  notes               String?        // client-submitted concerns/allergies/goals from the appointment form
+  notes               String?        @db.Text // client-submitted concerns/allergies/goals from the appointment form
   referredByCode      String?        // referral code entered at booking time, if any
   createdAt           DateTime       @default(now())
   confirmedAt         DateTime?
@@ -276,12 +278,7 @@ model Enquiry {
   name      String
   email     String
   phone     String?
-  message   String   // plain String, not @db.Text — matches this project's
-                      // SQLite-compatibility convention; if enquiries turn
-                      // out to run long in practice, apply the same
-                      // production-only @db.Text treatment used for
-                      // Treatment/Product/Specialist fields, directly on
-                      // the VPS schema, not committed here.
+  message   String   @db.Text
   status    String   @default("NEW") // NEW | RESPONDED
   createdAt DateTime @default(now())
 }

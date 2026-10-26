@@ -9,7 +9,7 @@ Read that file before making architectural changes.
 
 ## Stack
 - **Backend:** Node.js + Express + Prisma ORM
-- **Local DB:** SQLite (`prisma/dev.db`, gitignored) — zero setup, no DB server needed
+- **DB:** MySQL everywhere. `prisma/schema.prisma` is the MySQL schema (datasource `mysql`, `shadowDatabaseUrl`, `@db.Text` on the long-text fields incl. `Enquiry.message`) and is committed as-is; `prisma/migrations/` are MySQL migrations, `migration_lock.toml` says `mysql`. The old SQLite setup is retired (old migrations archived in `prisma/_archived-sqlite-migrations/`), so `prisma/dev.db` no longer works with the current client. Local dev needs a MySQL `DATABASE_URL` and `SHADOW_DATABASE_URL` in `.env`. **The rest of this section and the notes about SQLite-compatibility / production-only schema divergence below predate this change and are superseded: the VPS schema is no longer a diverging copy, and `schema.production-reference.prisma` is now just a historical reference.**
 - **Production:** Hostinger **VPS** at `168.231.76.58`, app deployed to
   `/var/www/auramed-spa-platform` and kept alive via **PM2** as process
   `auramed` (`pm2 restart auramed` after a `git pull`). MySQL runs locally on
@@ -359,11 +359,8 @@ no framework. Served by Express alongside everything else in `public/`.
   Same NEW/RESPONDED pattern as other staff-facing queues — admin →
   Enquiries (`GET /api/enquiries`, `PATCH /api/enquiries/:id/status`, both
   roles) is a flat follow-up list, not a booking-shaped queue.
-  `Enquiry.message` is a plain `String`, not `@db.Text` — if enquiries turn
-  out to run long in practice, apply the same production-only `@db.Text`
-  treatment used for Treatment/Product/Specialist fields directly on the
-  VPS schema (see `prisma/schema.production-reference.prisma`), don't
-  commit it here.
+  `Enquiry.message` is `@db.Text` (migration `20261026190500_enquiry_message_text`),
+  so long contact-form messages are stored in full.
 
 ## Staff Login & Daily Schedule
 - **A Staff profile and an `AdminUser` login are separate things**, linked
